@@ -10,6 +10,7 @@ import { theme } from "../theme";
 import { AuthSessionProvider } from "../providers/AuthSessionProvider";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
+import { GoogleOneTap } from "../components/GoogleOneTap";
 
 export const metadata = {
   title: "Auto Leadsheet Generator",
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: any }) {
       <body>
         <MantineProvider theme={theme} defaultColorScheme="dark">
           <AuthSessionProvider>
+            <GoogleOneTap />
             <div
               style={{
                 minHeight: "100vh",
