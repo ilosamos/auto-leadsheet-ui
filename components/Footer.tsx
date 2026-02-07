@@ -12,7 +12,7 @@ const links = [
 export function Footer() {
   return (
     <footer>
-      <Container size={680} py="md">
+      <Container size={740} py="md">
         <Group justify="space-between" align="center">
           <Text size="xs" c="dimmed">
             &copy; {new Date().getFullYear()} Auto Leadsheet Generator
