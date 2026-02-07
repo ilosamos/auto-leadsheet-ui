@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import {
   Box,
   Button,
@@ -10,22 +11,74 @@ import {
   Text,
 } from "@mantine/core";
 import { IconFileTypeXml, IconFileTypePdf } from "@tabler/icons-react";
-
-export interface GeneratedResult {
-  id: string;
-  title: string;
-  artist: string;
-  previewUrl: string;
-  audioSrc: string;
-  xmlDownloadUrl: string;
-  pdfDownloadUrl: string;
-}
+import { getSession } from "next-auth/react";
+import { SongResponse } from "../app/client";
+import { OpenAPI } from "../app/client/core/OpenAPI";
+import { useJob } from "../providers/JobProvider";
 
 interface ResultItemProps {
-  result: GeneratedResult;
+  song: SongResponse;
 }
 
-export function ResultItem({ result }: ResultItemProps) {
+/**
+ * Fetch an authenticated file from the API and trigger a browser download.
+ */
+async function downloadFile(url: string, filename: string) {
+  const session = await getSession();
+  const token = session?.idToken ?? "";
+
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Download failed: ${res.status} ${res.statusText}`);
+  }
+
+  const blob = await res.blob();
+  const objectUrl = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = objectUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+
+  // Cleanup
+  document.body.removeChild(a);
+  URL.revokeObjectURL(objectUrl);
+}
+
+export function ResultItem({ song }: ResultItemProps) {
+  const { currentJob } = useJob();
+  const [downloading, setDownloading] = useState<"pdf" | "xml" | null>(null);
+
+  const placeholderImageUrl = () => {
+    const letter = song.title?.charAt(0).toUpperCase();
+    return `https://placehold.co/72x72/1a1b1e/666?text=${letter}`
+  }
+
+  const handleDownload = useCallback(
+    async (type: "pdf" | "xml") => {
+      if (!currentJob) return;
+
+      const ext = type === "pdf" ? "sheet.pdf" : "sheet.musicxml";
+      const filename = `${song.title ?? song.songId}.${type === "pdf" ? "pdf" : "musicxml"}`;
+      const url = `${OpenAPI.BASE}/jobs/${currentJob.jobId}/songs/${song.songId}/${ext}`;
+
+      setDownloading(type);
+      try {
+        await downloadFile(url, filename);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to download ${type}:`, err);
+      } finally {
+        setDownloading(null);
+      }
+    },
+    [currentJob, song.songId, song.title],
+  );
+
   return (
     <Paper withBorder p="sm" radius="md">
       <Group gap="md" align="flex-start" wrap="nowrap">
@@ -41,12 +94,16 @@ export function ResultItem({ result }: ResultItemProps) {
           }}
         >
           <Image
-            src={result.previewUrl}
-            alt={`${result.title} preview`}
+            src={
+              song.preview
+                ? `data:image/png;base64,${song.preview}`
+                : undefined
+            }
+            alt={`${song.title} preview`}
             w={72}
             h={72}
             fit="cover"
-            fallbackSrc="https://placehold.co/72x72/1a1b1e/666?text=Sheet"
+            fallbackSrc={placeholderImageUrl()}
           />
         </Box>
 
@@ -54,10 +111,10 @@ export function ResultItem({ result }: ResultItemProps) {
         <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
           <div>
             <Text size="sm" fw={600} lineClamp={1}>
-              {result.title}
+              {song.title}
             </Text>
             <Text size="xs" c="dimmed" lineClamp={1}>
-              {result.artist}
+              {song.artist}
             </Text>
           </div>
 
@@ -66,7 +123,7 @@ export function ResultItem({ result }: ResultItemProps) {
           <audio
             controls
             preload="none"
-            src={result.audioSrc}
+            src={undefined}
             style={{ width: "100%", height: 32 }}
           />
         </Stack>
@@ -74,24 +131,25 @@ export function ResultItem({ result }: ResultItemProps) {
         {/* Download buttons */}
         <Stack gap="xs" style={{ flexShrink: 0 }} justify="center">
           <Button
-            variant="light"
+            variant="filled"
             size="xs"
             leftSection={<IconFileTypeXml size={16} />}
-            component="a"
-            href={result.xmlDownloadUrl}
-            download
+            loading={downloading === "xml"}
+            onClick={() => handleDownload("xml")}
+            justify="flex-start"
           >
-            MusicXML
+            Download MusicXML
           </Button>
           <Button
-            variant="light"
+            variant="filled"
+            color="red"
             size="xs"
             leftSection={<IconFileTypePdf size={16} />}
-            component="a"
-            href={result.pdfDownloadUrl}
-            download
+            loading={downloading === "pdf"}
+            onClick={() => handleDownload("pdf")}
+            justify="flex-start"
           >
-            PDF
+            Download PDF
           </Button>
         </Stack>
       </Group>

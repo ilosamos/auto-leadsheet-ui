@@ -1,15 +1,22 @@
 "use client";
 
-import { Stack, Tabs, Text } from "@mantine/core";
+import { Button, Center, Group, Loader, Stack, Tabs, Text } from "@mantine/core";
 import {
   IconHistory,
   IconMicrophone2,
+  IconPlus,
   IconSettings,
 } from "@tabler/icons-react";
+import { useJob } from "../providers/JobProvider";
 import { FileUpload } from "./FileUpload";
 import { ResultList } from "./ResultList";
 
 export function AppTabs() {
+  const { isLoadingJob, isLoadingSongs, currentJobSongs, createJob } = useJob();
+  const isLoading = isLoadingJob || isLoadingSongs;
+
+  const finishedSongs = currentJobSongs.filter(s => s.allin1Path && s.chordsPath);
+
   return (
     <Tabs
       defaultValue="analyze"
@@ -31,10 +38,31 @@ export function AppTabs() {
       </Tabs.List>
 
       <Tabs.Panel value="analyze" pl="md">
-        <Stack gap="xl">
-          <FileUpload />
-          <ResultList />
-        </Stack>
+        {isLoading ? (
+          <Center py="xl">
+            <Stack align="center" gap="sm">
+              <Text size="sm" c="dimmed">
+                Loading data…
+              </Text>
+              <Loader size="md" />
+            </Stack>
+          </Center>
+        ) : (
+          <Stack gap="xl">
+            <Group justify="flex-end">
+              <Button
+                variant="filled"
+                leftSection={<IconPlus size={16} />}
+                onClick={createJob}
+                loading={isLoadingJob}
+              >
+                New Session
+              </Button>
+            </Group>
+            <FileUpload />
+            <ResultList songs={finishedSongs} />
+          </Stack>
+        )}
       </Tabs.Panel>
 
       <Tabs.Panel value="history" pl="md">

@@ -6,10 +6,10 @@
  * Response model for upload URL.
  */
 export type UploadUrlResponse = {
-    song_id: string;
-    upload_url: string;
-    audio_path: string;
-    content_type: string;
-    expires_in_minutes?: number;
+    songId: string;
+    uploadUrl: string;
+    audioPath: string;
+    contentType: string;
+    expiresInMinutes?: number;
 };
 

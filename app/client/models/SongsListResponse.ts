@@ -7,7 +7,7 @@ import type { SongResponse } from './SongResponse';
  * Response model for a list of songs.
  */
 export type SongsListResponse = {
-    job_id: string;
+    jobId: string;
     songs: Array<SongResponse>;
 };
 

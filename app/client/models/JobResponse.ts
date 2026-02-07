@@ -7,11 +7,11 @@ import type { JobStatusEnum } from './JobStatusEnum';
  * Response model for a job.
  */
 export type JobResponse = {
-    job_id: string;
-    created_at: string;
-    updated_at: string;
+    jobId: string;
+    createdAt: string;
+    updatedAt: string;
     status: JobStatusEnum;
-    allin1_execution?: (string | null);
-    chord_execution?: (string | null);
+    allin1Execution?: (string | null);
+    chordExecution?: (string | null);
 };
 

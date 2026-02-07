@@ -8,6 +8,7 @@
 export type CreateSongRequest = {
     title?: (string | null);
     artist?: (string | null);
-    file_type?: string;
+    originalName?: (string | null);
+    fileType?: string;
 };
 

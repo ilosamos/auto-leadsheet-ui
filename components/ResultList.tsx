@@ -1,35 +1,30 @@
 "use client";
 
 import { Stack, Text, Title } from "@mantine/core";
-import { ResultItem, type GeneratedResult } from "./ResultItem";
+import { ResultItem } from "./ResultItem";
+import { SongResponse } from "../app/client";
 
-const MOCK_RESULTS: GeneratedResult[] = [
+const MOCK_RESULTS: SongResponse[] = [
   {
-    id: "result-1",
+    songId: "result-1",
+    chordStatus: "SUCCESS",
+    allin1Status: "SUCCESS",
     title: "Take Five",
     artist: "Dave Brubeck",
-    previewUrl: "",
-    audioSrc: "",
-    xmlDownloadUrl: "#",
-    pdfDownloadUrl: "#",
-  },
-  {
-    id: "result-2",
-    title: "Autumn Leaves",
-    artist: "Joseph Kosma",
-    previewUrl: "",
-    audioSrc: "",
-    xmlDownloadUrl: "#",
-    pdfDownloadUrl: "#",
+    audioPath: "https://example.com/audio.mp3",
+    chordsPath: "https://example.com/chords.xml",
+    allin1Path: "https://example.com/allin1.pdf",
+    size: 1000000,
+    length: 180,
   },
 ];
 
 interface ResultListProps {
-  results?: GeneratedResult[];
+  songs?: SongResponse[];
 }
 
-export function ResultList({ results = MOCK_RESULTS }: ResultListProps) {
-  if (results.length === 0) {
+export function ResultList({ songs }: ResultListProps) {
+  if (!songs || songs.length === 0) {
     return null;
   }
 
@@ -38,11 +33,11 @@ export function ResultList({ results = MOCK_RESULTS }: ResultListProps) {
       <div>
         <Title order={4}>Generated Lead Sheets</Title>
         <Text size="sm" c="dimmed">
-          {results.length} {results.length === 1 ? "file" : "files"} processed
+          {songs.length} {songs.length === 1 ? "file" : "files"} processed
         </Text>
       </div>
-      {results.map((r) => (
-        <ResultItem key={r.id} result={r} />
+      {songs.map((s) => (
+        <ResultItem key={s.songId} song={s} />
       ))}
     </Stack>
   );

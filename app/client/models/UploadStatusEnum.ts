@@ -3,10 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Response after triggering a Cloud Run job.
+ * Status values for audio file upload.
  */
-export type RunJobResponse = {
-    jobId: string;
-    executionId: string;
-};
-
+export type UploadStatusEnum = 'PENDING' | 'UPLOADING' | 'ERROR' | 'SUCCESS';

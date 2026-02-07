@@ -17,6 +17,9 @@ export type { RunJobResponse } from './models/RunJobResponse';
 export type { SongResponse } from './models/SongResponse';
 export type { SongsListResponse } from './models/SongsListResponse';
 export type { SongStatusResponse } from './models/SongStatusResponse';
+export type { UpdateSongRequest } from './models/UpdateSongRequest';
+export type { UpdateUploadStatusRequest } from './models/UpdateUploadStatusRequest';
+export type { UploadStatusEnum } from './models/UploadStatusEnum';
 export type { UploadUrlResponse } from './models/UploadUrlResponse';
 export type { ValidationError } from './models/ValidationError';
 

@@ -7,7 +7,7 @@ import type { JobStatusEnum } from './JobStatusEnum';
  * Response model for job status only.
  */
 export type JobStatusResponse = {
-    job_id: string;
+    jobId: string;
     status: JobStatusEnum;
 };
 

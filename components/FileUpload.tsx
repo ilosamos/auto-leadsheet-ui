@@ -8,40 +8,13 @@ import {
   IconDownload,
   IconX,
 } from "@tabler/icons-react";
+import { notifications } from "@mantine/notifications";
 import { FileList } from "./FileList";
-import type { UploadedFile } from "./FileItem";
-
-function createMockFile(name: string, sizeInBytes: number, type: string): File {
-  const buffer = new ArrayBuffer(sizeInBytes);
-  return new File([buffer], name, { type });
-}
-
-const MOCK_FILES: UploadedFile[] = [
-  {
-    id: "mock-1",
-    file: createMockFile("Take Five.mp3", 8_432_000, "audio/mpeg"),
-    progress: 100,
-    status: "done",
-  },
-  {
-    id: "mock-2",
-    file: createMockFile("Autumn Leaves.wav", 42_100_000, "audio/wav"),
-    progress: 100,
-    status: "done",
-  },
-  {
-    id: "mock-3",
-    file: createMockFile("So What.flac", 31_750_000, "audio/flac"),
-    progress: 62,
-    status: "uploading",
-  },
-  {
-    id: "mock-4",
-    file: createMockFile("Blue in Green.m4a", 5_280_000, "audio/mp4"),
-    progress: 100,
-    status: "error",
-  },
-];
+import type { UploadProgress } from "./FileItem";
+import { useJob } from "../providers/JobProvider";
+import { SongsService } from "../app/client/services/SongsService";
+import { api } from "../app/client/api";
+import type { UpdateSongRequest } from "../app/client/models/UpdateSongRequest";
 
 const ACCEPTED_MIME_TYPES = [
   "audio/mpeg",
@@ -52,71 +25,205 @@ const ACCEPTED_MIME_TYPES = [
   "audio/x-m4a",
 ];
 
-/** Simulates upload progress for a single file. */
-function simulateUpload(
-  fileId: string,
-  setFiles: React.Dispatch<React.SetStateAction<UploadedFile[]>>,
-  intervalsRef: React.MutableRefObject<Map<string, ReturnType<typeof setInterval>>>
-) {
-  const interval = setInterval(() => {
-    setFiles((prev) =>
-      prev.map((f) => {
-        if (f.id !== fileId) {
-          return f;
-        }
-        const next = Math.min(f.progress + Math.random() * 18 + 6, 100);
-        const done = next >= 100;
-        if (done) {
-          clearInterval(intervalsRef.current.get(fileId)!);
-          intervalsRef.current.delete(fileId);
-        }
-        return {
-          ...f,
-          progress: done ? 100 : next,
-          status: done ? "done" : "uploading",
-        };
-      })
-    );
-  }, 200);
+/** Map MIME type to the fileType the API expects. */
+function mimeToFileType(mime: string): string {
+  const map: Record<string, string> = {
+    "audio/mpeg": "mp3",
+    "audio/wav": "wav",
+    "audio/x-wav": "wav",
+    "audio/flac": "flac",
+    "audio/mp4": "m4a",
+    "audio/x-m4a": "m4a",
+  };
+  return map[mime] ?? "mp3";
+}
 
-  intervalsRef.current.set(fileId, interval);
+/** Upload a file to a signed URL with progress tracking via XMLHttpRequest. */
+function uploadToSignedUrl(
+  file: File,
+  signedUrl: string,
+  contentType: string,
+  onProgress: (progress: number) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", signedUrl);
+    xhr.setRequestHeader("Content-Type", contentType);
+
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        onProgress((e.loaded / e.total) * 100);
+      }
+    });
+
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+      }
+    });
+
+    xhr.addEventListener("error", () => reject(new Error("Upload network error")));
+    xhr.addEventListener("abort", () => reject(new Error("Upload aborted")));
+
+    xhr.send(file);
+  });
 }
 
 export function FileUpload() {
-  const [files, setFiles] = useState<UploadedFile[]>(MOCK_FILES);
   const openRef = useRef<(() => void) | null>(null);
-  const intervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(
-    new Map()
+  const [uploads, setUploads] = useState<Map<string, UploadProgress>>(
+    () => new Map(),
+  );
+  const [isUploading, setIsUploading] = useState(false);
+  const activeUploadsRef = useRef(0);
+  const { currentJob, currentJobSongs, addSong, removeSong, updateSong, patchSongLocally, updateSongUploadStatus } = useJob();
+
+  const updateUpload = useCallback(
+    (songId: string, patch: Partial<UploadProgress>) =>
+      setUploads((prev) => {
+        const next = new Map(prev);
+        const current = next.get(songId) ?? { progress: 0, status: "uploading" as const };
+        next.set(songId, { ...current, ...patch });
+        return next;
+      }),
+    [],
+  );
+
+  const finishOneUpload = useCallback(() => {
+    activeUploadsRef.current -= 1;
+    if (activeUploadsRef.current <= 0) {
+      activeUploadsRef.current = 0;
+      setIsUploading(false);
+    }
+  }, []);
+
+  const uploadFile = useCallback(
+    async (file: FileWithPath) => {
+      const jobId = currentJob?.jobId;
+      if (!jobId) {
+        finishOneUpload();
+        return;
+      }
+
+      // 1. Create a song record via the provider (updates currentJobSongs)
+      const fileType = mimeToFileType(file.type);
+      const title = file.name.replace(/\.[^.]+$/, "");
+      const song = await addSong({ title, fileType });
+      if (!song) {
+        finishOneUpload();
+        return;
+      }
+
+      const songId = song.songId;
+      updateUpload(songId, { progress: 0, status: "uploading" });
+
+      try {
+        // 2. Get the signed upload URL
+        const urlResult = await api(
+          SongsService.getUploadUrlJobsJobIdSongsSongIdUploadUrlGet({
+            jobId,
+            songId,
+          }),
+        );
+        if (urlResult.error) {
+          updateUpload(songId, { status: "error", progress: 100 });
+          await updateSongUploadStatus(songId, "ERROR");
+          return;
+        }
+
+        const { uploadUrl, contentType } = urlResult.data;
+
+        // 3. PUT the file to the signed URL
+        await uploadToSignedUrl(file, uploadUrl, contentType, (progress) => {
+          updateUpload(songId, { progress });
+        });
+
+        updateUpload(songId, { progress: 100, status: "done" });
+
+        // 4. Notify the backend that upload succeeded
+        await updateSongUploadStatus(songId, "SUCCESS");
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("Upload failed:", err);
+        updateUpload(songId, { status: "error", progress: 100 });
+
+        // Notify the backend that upload failed
+        await updateSongUploadStatus(songId, "ERROR");
+      } finally {
+        finishOneUpload();
+      }
+    },
+    [currentJob, addSong, updateUpload, updateSongUploadStatus, finishOneUpload],
   );
 
   const handleDrop = useCallback(
     (droppedFiles: FileWithPath[]) => {
-      const newFiles: UploadedFile[] = droppedFiles.map((file) => ({
-        id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        file,
-        progress: 0,
-        status: "uploading" as const,
-      }));
+      if (!currentJob?.jobId) {
+        // eslint-disable-next-line no-console
+        console.error("No active job; create a new session first.");
+        return;
+      }
 
-      setFiles((prev) => [...prev, ...newFiles]);
+      // Set uploading state immediately before any async work
+      activeUploadsRef.current += droppedFiles.length;
+      setIsUploading(true);
 
-      // Start simulated upload for each new file
-      newFiles.forEach((f) =>
-        simulateUpload(f.id, setFiles, intervalsRef)
-      );
+      // Start real uploads in parallel
+      droppedFiles.forEach((file) => {
+        uploadFile(file);
+      });
     },
-    []
+    [currentJob, uploadFile],
   );
 
-  const handleRemove = useCallback((id: string) => {
-    // Clear any running interval for this file
-    const interval = intervalsRef.current.get(id);
-    if (interval) {
-      clearInterval(interval);
-      intervalsRef.current.delete(id);
-    }
-    setFiles((prev) => prev.filter((f) => f.id !== id));
-  }, []);
+  const handleRemoveSong = useCallback(
+    async (songId: string) => {
+      const success = await removeSong(songId);
+
+      if (success) {
+        // Clean up local upload progress
+        setUploads((prev) => {
+          const next = new Map(prev);
+          next.delete(songId);
+          return next;
+        });
+      } else {
+        notifications.show({
+          title: "Failed to remove song",
+          message: "Something went wrong while deleting the song. Please try again.",
+          color: "red",
+        });
+      }
+    },
+    [removeSong],
+  );
+
+  const handleUpdateSong = useCallback(
+    async (songId: string, request: UpdateSongRequest) => {
+      // Find the current song to save its state for rollback
+      const previousSong = currentJobSongs.find((s) => s.songId === songId);
+
+      // Optimistically update the UI
+      patchSongLocally(songId, request);
+
+      const updated = await updateSong(songId, request);
+      if (!updated && previousSong) {
+        // Rollback to the previous values
+        patchSongLocally(songId, {
+          title: previousSong.title,
+          artist: previousSong.artist,
+        });
+        notifications.show({
+          title: "Failed to update song",
+          message: "Something went wrong while saving changes. Please try again.",
+          color: "red",
+        });
+      }
+    },
+    [currentJobSongs, updateSong, patchSongLocally],
+  );
 
   return (
     <Stack gap="xl">
@@ -127,6 +234,7 @@ export function FileUpload() {
           accept={ACCEPTED_MIME_TYPES}
           maxSize={100 * 1024 * 1024}
           radius="md"
+          disabled={isUploading}
           aria-label="Drop audio files here"
         >
           <div style={{ pointerEvents: "none" }}>
@@ -187,6 +295,7 @@ export function FileUpload() {
         <Button
           size="md"
           radius="xl"
+          loading={isUploading}
           onClick={() => openRef.current?.()}
           style={{
             position: "absolute",
@@ -198,7 +307,7 @@ export function FileUpload() {
         </Button>
       </div>
 
-      <FileList files={files} onRemove={handleRemove} />
+      <FileList songs={currentJobSongs} uploads={uploads} onRemove={handleRemoveSong} onUpdate={handleUpdateSong} />
     </Stack>
   );
 }

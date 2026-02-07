@@ -6,6 +6,8 @@ import type { CreateSongRequest } from '../models/CreateSongRequest';
 import type { SongResponse } from '../models/SongResponse';
 import type { SongsListResponse } from '../models/SongsListResponse';
 import type { SongStatusResponse } from '../models/SongStatusResponse';
+import type { UpdateSongRequest } from '../models/UpdateSongRequest';
+import type { UpdateUploadStatusRequest } from '../models/UpdateUploadStatusRequest';
 import type { UploadUrlResponse } from '../models/UploadUrlResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -66,19 +68,79 @@ export class SongsService {
      * @throws ApiError
      */
     public static getSongDetailsJobsJobIdSongsSongIdGet({
-        jobId,
         songId,
+        jobId,
     }: {
-        jobId: string,
         songId: string,
+        jobId: string,
     }): CancelablePromise<SongResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/jobs/{job_id}/songs/{song_id}',
             path: {
+                'song_id': songId,
+                'job_id': jobId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Delete Song Endpoint
+     * Delete a song and all its associated files from GCS.
+     *
+     * Removes the song document from Firestore and deletes the song
+     * directory under both the input and output bucket prefixes.
+     * @returns void
+     * @throws ApiError
+     */
+    public static deleteSongEndpointJobsJobIdSongsSongIdDelete({
+        jobId,
+        songId,
+    }: {
+        jobId: string,
+        songId: string,
+    }): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/jobs/{job_id}/songs/{song_id}',
+            path: {
                 'job_id': jobId,
                 'song_id': songId,
             },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Update Song Endpoint
+     * Update song metadata.
+     *
+     * Only the fields provided in the request body will be updated.
+     * Omitted (null) fields are left unchanged.
+     * @returns SongResponse Successful Response
+     * @throws ApiError
+     */
+    public static updateSongEndpointJobsJobIdSongsSongIdPatch({
+        jobId,
+        songId,
+        requestBody,
+    }: {
+        jobId: string,
+        songId: string,
+        requestBody: UpdateSongRequest,
+    }): CancelablePromise<SongResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/jobs/{job_id}/songs/{song_id}',
+            path: {
+                'job_id': jobId,
+                'song_id': songId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: `Validation Error`,
             },
@@ -91,18 +153,18 @@ export class SongsService {
      * @throws ApiError
      */
     public static getSongStatusJobsJobIdSongsSongIdStatusGet({
-        jobId,
         songId,
+        jobId,
     }: {
-        jobId: string,
         songId: string,
+        jobId: string,
     }): CancelablePromise<SongStatusResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/jobs/{job_id}/songs/{song_id}/status',
             path: {
-                'job_id': jobId,
                 'song_id': songId,
+                'job_id': jobId,
             },
             errors: {
                 422: `Validation Error`,
@@ -118,15 +180,103 @@ export class SongsService {
      * @throws ApiError
      */
     public static getUploadUrlJobsJobIdSongsSongIdUploadUrlGet({
+        songId,
+        jobId,
+    }: {
+        songId: string,
+        jobId: string,
+    }): CancelablePromise<UploadUrlResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/jobs/{job_id}/songs/{song_id}/upload-url',
+            path: {
+                'song_id': songId,
+                'job_id': jobId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Update Upload Status
+     * Update the upload status of a song.
+     *
+     * Called by the client after a file upload completes (or fails) via the
+     * signed URL so the backend can track progress.
+     * @returns SongResponse Successful Response
+     * @throws ApiError
+     */
+    public static updateUploadStatusJobsJobIdSongsSongIdUploadStatusPatch({
+        jobId,
+        songId,
+        requestBody,
+    }: {
+        jobId: string,
+        songId: string,
+        requestBody: UpdateUploadStatusRequest,
+    }): CancelablePromise<SongResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/jobs/{job_id}/songs/{song_id}/upload-status',
+            path: {
+                'job_id': jobId,
+                'song_id': songId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Get Song Musicxml
+     * Get the MusicXML lead sheet for a song.
+     *
+     * Generates the file on the first request and caches it in GCS for
+     * subsequent requests.
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static getSongMusicxmlJobsJobIdSongsSongIdSheetMusicxmlGet({
         jobId,
         songId,
     }: {
         jobId: string,
         songId: string,
-    }): CancelablePromise<UploadUrlResponse> {
+    }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/jobs/{job_id}/songs/{song_id}/upload-url',
+            url: '/jobs/{job_id}/songs/{song_id}/sheet.musicxml',
+            path: {
+                'job_id': jobId,
+                'song_id': songId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Get Song Pdf
+     * Get the PDF lead sheet for a song.
+     *
+     * Generates the file on the first request and caches it in GCS for
+     * subsequent requests.
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static getSongPdfJobsJobIdSongsSongIdSheetPdfGet({
+        jobId,
+        songId,
+    }: {
+        jobId: string,
+        songId: string,
+    }): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/jobs/{job_id}/songs/{song_id}/sheet.pdf',
             path: {
                 'job_id': jobId,
                 'song_id': songId,

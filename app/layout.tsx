@@ -1,13 +1,16 @@
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
+import "@mantine/notifications/styles.css";
 import React from "react";
 import {
   MantineProvider,
   ColorSchemeScript,
   mantineHtmlProps,
 } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import { theme } from "../theme";
 import { AuthSessionProvider } from "../providers/AuthSessionProvider";
+import { JobProvider } from "../providers/JobProvider";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { GoogleOneTap } from "../components/GoogleOneTap";
@@ -31,19 +34,22 @@ export default function RootLayout({ children }: { children: any }) {
       </head>
       <body>
         <MantineProvider theme={theme} defaultColorScheme="dark">
+          <Notifications position="top-right" />
           <AuthSessionProvider>
-            <GoogleOneTap />
-            <div
-              style={{
-                minHeight: "100vh",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Header />
-              <main style={{ flex: 1 }}>{children}</main>
-              <Footer />
-            </div>
+            <JobProvider>
+              <GoogleOneTap />
+              <div
+                style={{
+                  minHeight: "100vh",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <Header />
+                <main style={{ flex: 1 }}>{children}</main>
+                <Footer />
+              </div>
+            </JobProvider>
           </AuthSessionProvider>
         </MantineProvider>
       </body>

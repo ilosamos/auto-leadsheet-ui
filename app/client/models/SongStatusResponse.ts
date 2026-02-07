@@ -7,8 +7,8 @@ import type { JobStatusEnum } from './JobStatusEnum';
  * Response model for song status only.
  */
 export type SongStatusResponse = {
-    song_id: string;
-    chord_status: JobStatusEnum;
-    allin1_status: JobStatusEnum;
+    songId: string;
+    chordStatus: JobStatusEnum;
+    allin1Status: JobStatusEnum;
 };
 

@@ -1,8 +1,10 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import {
   ActionIcon,
   Group,
+  Loader,
   Paper,
   Progress,
   Text,
@@ -14,14 +16,15 @@ import {
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
+import type { SongResponse } from "../app/client/models/SongResponse";
+import type { UpdateSongRequest } from "../app/client/models/UpdateSongRequest";
+import { EditableField } from "./EditableField";
 
-export type FileStatus = "idle" | "uploading" | "done" | "error";
+export type UploadStatus = "uploading" | "done" | "error";
 
-export interface UploadedFile {
-  id: string;
-  file: File;
+export interface UploadProgress {
   progress: number;
-  status: FileStatus;
+  status: UploadStatus;
 }
 
 function formatFileSize(bytes: number): string {
@@ -35,19 +38,25 @@ function formatFileSize(bytes: number): string {
 }
 
 interface FileItemProps {
-  uploadedFile: UploadedFile;
-  onRemove: (id: string) => void;
+  song: SongResponse;
+  upload?: UploadProgress;
+  onRemove?: (songId: string) => Promise<void> | void;
+  onUpdate?: (songId: string, request: UpdateSongRequest) => Promise<void> | void;
 }
 
-export function FileItem({ uploadedFile, onRemove }: FileItemProps) {
-  const { id, file, progress, status } = uploadedFile;
+export function FileItem({ song, upload, onRemove, onUpdate }: FileItemProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const status: UploadStatus | "idle" = upload?.status ?? "idle";
+  const progress = upload?.progress ?? (song.audioPath ? 100 : 0);
+
+  const isSongUploadStatusError = song.uploadStatus === "ERROR";
 
   const statusIcon =
-    status === "done" ? (
+    status === "done" || (!upload && song.uploadStatus === "SUCCESS") ? (
       <ThemeIcon color="teal" variant="light" size="sm" radius="xl">
         <IconCheck size={14} />
       </ThemeIcon>
-    ) : status === "error" ? (
+    ) : status === "error" || isSongUploadStatusError ? (
       <ThemeIcon color="red" variant="light" size="sm" radius="xl">
         <IconX size={14} />
       </ThemeIcon>
@@ -56,33 +65,74 @@ export function FileItem({ uploadedFile, onRemove }: FileItemProps) {
   const progressColor =
     status === "done" ? "teal" : status === "error" ? "red" : "blue";
 
+  const handleTitleSubmit = useCallback(
+    (newTitle: string) => {
+      onUpdate?.(song.songId, { title: newTitle });
+    },
+    [song.songId, onUpdate],
+  );
+
+  const handleArtistSubmit = useCallback(
+    (newArtist: string) => {
+      onUpdate?.(song.songId, { artist: newArtist });
+    },
+    [song.songId, onUpdate],
+  );
+
   return (
     <Paper withBorder p="sm" radius="md">
-      <Group justify="space-between" mb={progress < 100 ? 6 : 0}>
-        <Group gap="sm">
-          <ThemeIcon variant="light" color="blue" size="lg" radius="md">
+      <Group justify="space-between" mb={status === "uploading" ? 6 : 0}>
+        <Group gap="sm" style={{ flex: 1, minWidth: 0 }}>
+          <ThemeIcon variant="light" color="blue" size="lg" radius="md" style={{ flexShrink: 0 }}>
             <IconFileMusic size={20} />
           </ThemeIcon>
-          <div>
-            <Text size="sm" fw={500} lineClamp={1}>
-              {file.name}
-            </Text>
-            <Text size="xs" c="dimmed">
-              {formatFileSize(file.size)}
-            </Text>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <EditableField
+              value={song.title ?? ""}
+              placeholder="Untitled"
+              size="sm"
+              fw={500}
+              onSubmit={handleTitleSubmit}
+            />
+            <EditableField
+              value={song.artist ?? ""}
+              placeholder="Unknown artist"
+              size="xs"
+              c="dimmed"
+              onSubmit={handleArtistSubmit}
+            />
+            {song.size != null && (
+              <Text size="xs" c="dimmed" mt={2}>
+                {formatFileSize(song.size)}
+              </Text>
+            )}
           </div>
         </Group>
-        <Group gap="xs">
+        <Group gap="xs" style={{ flexShrink: 0 }}>
+          {isSongUploadStatusError ? <Text size="xs" c="red">Upload Error</Text> : null}
           {statusIcon}
-          <ActionIcon
-            variant="subtle"
-            color="gray"
-            size="sm"
-            onClick={() => onRemove(id)}
-            aria-label="Remove file"
-          >
-            <IconTrash size={16} />
-          </ActionIcon>
+          {onRemove && (
+            isDeleting ? (
+              <Loader size="xs" color="red" />
+            ) : (
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="sm"
+                onClick={async () => {
+                  setIsDeleting(true);
+                  try {
+                    await onRemove(song.songId);
+                  } finally {
+                    setIsDeleting(false);
+                  }
+                }}
+                aria-label="Remove file"
+              >
+                <IconTrash size={16} />
+              </ActionIcon>
+            )
+          )}
         </Group>
       </Group>
 
