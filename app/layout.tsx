@@ -1,4 +1,5 @@
 import "@mantine/core/styles.css";
+import "@mantine/dropzone/styles.css";
 import React from "react";
 import {
   MantineProvider,
@@ -6,17 +7,20 @@ import {
   mantineHtmlProps,
 } from "@mantine/core";
 import { theme } from "../theme";
+import { Header } from "../components/Header";
+import { Footer } from "../components/Footer";
 
 export const metadata = {
-  title: "Mantine Next.js template",
-  description: "I am using Mantine with Next.js!",
+  title: "Auto Leadsheet Generator",
+  description:
+    "Upload your audio files and get lead sheets generated automatically.",
 };
 
 export default function RootLayout({ children }: { children: any }) {
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme="dark" />
         <link rel="shortcut icon" href="/favicon.svg" />
         <meta
           name="viewport"
@@ -24,7 +28,19 @@ export default function RootLayout({ children }: { children: any }) {
         />
       </head>
       <body>
-        <MantineProvider theme={theme}>{children}</MantineProvider>
+        <MantineProvider theme={theme} defaultColorScheme="dark">
+          <div
+            style={{
+              minHeight: "100vh",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Header />
+            <main style={{ flex: 1 }}>{children}</main>
+            <Footer />
+          </div>
+        </MantineProvider>
       </body>
     </html>
   );

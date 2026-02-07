@@ -6,25 +6,36 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@mantine/core": "8.3.14",
+    "@mantine/dropzone": "^8.3.14",
+    "@mantine/form": "^8.3.14",
     "@mantine/hooks": "8.3.14",
+    "@mantine/modals": "^8.3.14",
+    "@tabler/icons-react": "^3.36.1",
     "next": "15.5.3",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.9.1",
+    "@next/eslint-plugin-next": "15.5.3",
     "@types/node": "24.3.3",
     "@types/react": "19.1.13",
     "@types/react-dom": "19.1.9",
-    "eslint": "9.35.0",
-    "eslint-config-next": "15.5.3",
+    "eslint": "^9.9.1",
+    "eslint-config-mantine": "^4.0.3",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.0.0",
     "postcss": "^8.5.6",
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "^7.0.1",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "typescript-eslint": "^8.54.0"
   },
   "packageManager": "yarn@4.12.0"
 }
