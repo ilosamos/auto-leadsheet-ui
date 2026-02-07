@@ -10,6 +10,7 @@ import {
 import { useJob } from "../providers/JobProvider";
 import { FileUpload } from "./FileUpload";
 import { ResultList } from "./ResultList";
+import { GenerateSheetButton } from "./GenerateSheetButton";
 
 export function AppTabs() {
   const { isLoadingJob, isLoadingSongs, currentJobSongs, createJob } = useJob();
@@ -60,6 +61,16 @@ export function AppTabs() {
               </Button>
             </Group>
             <FileUpload />
+            {currentJobSongs.length > 0 && (
+              <GenerateSheetButton
+                songs={currentJobSongs}
+                loading={false}
+                loadingText="This may take a few minutes"
+                onGenerate={() => {
+                  // TODO: wire up actual sheet generation
+                }}
+              />
+            )}
             <ResultList songs={finishedSongs} />
           </Stack>
         )}

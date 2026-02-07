@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { Button, Group, Text, Stack } from "@mantine/core";
+import { Alert, Button, Group, Text, Stack } from "@mantine/core";
 import { Dropzone, type FileWithPath } from "@mantine/dropzone";
 import {
+  IconAlertCircle,
   IconCloudUpload,
   IconDownload,
   IconX,
@@ -109,8 +110,18 @@ export function FileUpload() {
 
       // 1. Create a song record via the provider (updates currentJobSongs)
       const fileType = mimeToFileType(file.type);
-      const title = file.name.replace(/\.[^.]+$/, "");
-      const song = await addSong({ title, fileType });
+      const originalName = file.name;
+      const baseName = file.name.replace(/\.[^.]+$/, "");
+      const dashIndex = baseName.indexOf("-");
+      let title: string;
+      let artist: string | undefined;
+      if (dashIndex !== -1) {
+        title = baseName.slice(0, dashIndex).trim().slice(0, 30);
+        artist = baseName.slice(dashIndex + 1).trim().slice(0, 30) || undefined;
+      } else {
+        title = baseName.trim().slice(0, 30);
+      }
+      const song = await addSong({ title, artist, originalName, fileType });
       if (!song) {
         finishOneUpload();
         return;
@@ -308,6 +319,18 @@ export function FileUpload() {
       </div>
 
       <FileList songs={currentJobSongs} uploads={uploads} onRemove={handleRemoveSong} onUpdate={handleUpdateSong} />
+
+      {currentJobSongs.length > 0 &&
+        currentJobSongs.some((s) => !s.title?.trim() || !s.artist?.trim()) && (
+          <Alert
+            variant="light"
+            color="red"
+            radius="md"
+            icon={<IconAlertCircle size={18} />}
+          >
+            Please set a title and artist for every song before generating.
+          </Alert>
+        )}
     </Stack>
   );
 }

@@ -1,11 +1,44 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { jwtVerify, createRemoteJWKSet } from "jose";
+import { jwtVerify, createRemoteJWKSet, SignJWT } from "jose";
 
 const googleJWKS = createRemoteJWKSet(
   new URL("https://www.googleapis.com/oauth2/v3/certs")
 );
+
+/** How long server-minted JWTs for One Tap sessions are valid (seconds). */
+const BACKEND_TOKEN_EXPIRY_SEC = 7 * 24 * 3600; // 7 days
+
+/**
+ * Create a server-signed JWT that replaces the short-lived Google One Tap
+ * ID token.  Signed with AUTH_SECRET so the backend can validate it with the
+ * same shared secret.  The JWT carries the same user claims as the original
+ * Google ID token.
+ */
+async function signBackendJwt(claims: {
+  sub: string;
+  email: string;
+  name: string;
+  picture?: string;
+}) {
+  const secret = new TextEncoder().encode(process.env.AUTH_SECRET!);
+  const expiresAt = Math.floor(Date.now() / 1000) + BACKEND_TOKEN_EXPIRY_SEC;
+
+  const jwt = await new SignJWT({
+    email: claims.email,
+    name: claims.name,
+    picture: claims.picture,
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(claims.sub)
+    .setIssuer("auto-leadsheet-ui")
+    .setIssuedAt()
+    .setExpirationTime(expiresAt)
+    .sign(secret);
+
+  return { jwt, expiresAt };
+}
 
 /**
  * Refresh the Google OAuth tokens using the stored refresh_token.
@@ -102,10 +135,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           account.provider === "google-one-tap" &&
           (user as Record<string, unknown>)?.idToken
         ) {
-          token.idToken = (user as Record<string, unknown>).idToken as string;
-          // One Tap tokens cannot be refreshed; set a short expiry so the
-          // user re-authenticates when it expires.
-          token.expiresAt = Math.floor(Date.now() / 1000) + 3600;
+          // Replace the short-lived Google ID token with a server-signed JWT
+          // that carries the same claims but is long-lived and can be
+          // re-signed on expiry (no Google refresh token needed).
+          const signed = await signBackendJwt({
+            sub: user.id!,
+            email: user.email!,
+            name: user.name!,
+            picture: user.image ?? undefined,
+          });
+          token.idToken = signed.jwt;
+          token.expiresAt = signed.expiresAt;
           token.provider = "google-one-tap";
         }
 
@@ -130,10 +170,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return token;
       }
 
-      // Try refreshing (only possible for the full OAuth flow)
+      // One Tap: re-sign a fresh backend JWT (no Google refresh token needed)
+      if (token.provider === "google-one-tap") {
+        const signed = await signBackendJwt({
+          sub: token.sub as string,
+          email: token.email as string,
+          name: token.name as string,
+          picture: token.picture as string | undefined,
+        });
+        return {
+          ...token,
+          idToken: signed.jwt,
+          expiresAt: signed.expiresAt,
+          error: undefined,
+        };
+      }
+
+      // Full OAuth flow: refresh via Google
       const refreshToken = token.refreshToken as string | undefined;
       if (!refreshToken) {
-        // One Tap: no refresh token available, token is now stale
         // eslint-disable-next-line no-console
         console.warn(
           `ID token expired and no refresh token available (provider: ${token.provider ?? "unknown"})`,
