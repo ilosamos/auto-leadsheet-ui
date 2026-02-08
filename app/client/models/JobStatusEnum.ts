@@ -5,4 +5,4 @@
 /**
  * Status values for a job or song.
  */
-export type JobStatusEnum = 'PENDING' | 'UPLOADING' | 'ANALYZING' | 'FAILED' | 'CANCELLED' | 'SUCCESS';
+export type JobStatusEnum = 'PENDING' | 'UPLOADING' | 'TRIGGERED' | 'ANALYZING' | 'FAILED' | 'CANCELLED' | 'SUCCESS';

@@ -36,8 +36,8 @@ export default function RootLayout({ children }: { children: any }) {
         <MantineProvider theme={theme} defaultColorScheme="dark">
           <Notifications position="top-right" />
           <AuthSessionProvider>
+            <GoogleOneTap />
             <JobProvider>
-              <GoogleOneTap />
               <div
                 style={{
                   minHeight: "100vh",

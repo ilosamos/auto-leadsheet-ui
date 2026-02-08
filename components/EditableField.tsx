@@ -11,6 +11,7 @@ interface EditableFieldProps {
   fw?: number;
   c?: string;
   onSubmit: (value: string) => void;
+  disabled?: boolean;
 }
 
 export function EditableField({
@@ -19,6 +20,7 @@ export function EditableField({
   size = "sm",
   fw,
   c,
+  disabled = false,
   onSubmit,
 }: EditableFieldProps) {
   const [editing, setEditing] = useState(false);
@@ -53,6 +55,7 @@ export function EditableField({
         variant="unstyled"
         value={draft}
         placeholder={placeholder}
+        disabled={disabled}
         onChange={(e) => setDraft(e.currentTarget.value)}
         onBlur={commit}
         onKeyDown={(e) => {
@@ -77,14 +80,14 @@ export function EditableField({
   }
 
   return (
-    <Group gap={4} wrap="nowrap" style={{ cursor: "pointer" }} onClick={() => setEditing(true)}>
+    <Group gap={4} wrap="nowrap" style={{ cursor: disabled ? "default" : "pointer" }} onClick={() => !disabled && setEditing(true)}>
       <Text size={size} fw={fw} c={c} lineClamp={1}>
         {value || placeholder}
       </Text>
-      <IconPencil
-        size={12}
+      {!disabled && <IconPencil
+        size={16}
         style={{ flexShrink: 0, opacity: 0.4 }}
-      />
+      />}
     </Group>
   );
 }

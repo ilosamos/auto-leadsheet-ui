@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 declare global {
   interface Window {
@@ -18,22 +17,15 @@ declare global {
   }
 }
 
-/**
- * Trigger the Google One Tap / GIS prompt manually.
- * Can be called from any component (e.g. Header sign-in button).
- */
-export function triggerGooglePrompt() {
-  window.google?.accounts.id.prompt();
-}
-
 export function GoogleOneTap() {
   const { status } = useSession();
-  const router = useRouter();
-  const initializedRef = useRef(false);
+  const loadedRef = useRef(false);
+  const [gsiReady, setGsiReady] = useState(false);
 
   // Load & initialize the GIS script exactly once.
   useEffect(() => {
-    if (initializedRef.current) return;
+    if (loadedRef.current) return;
+    loadedRef.current = true;
 
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
@@ -41,36 +33,37 @@ export function GoogleOneTap() {
     script.onload = () => {
       window.google?.accounts.id.initialize({
         client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        // FedCM is not supported on localhost
         use_fedcm_for_prompt: window.location.hostname !== "localhost",
-        callback: async (response: { credential: string }) => {
-          await signIn("google-one-tap", {
-            credential: response.credential,
-            redirect: false,
-          });
-          router.refresh();
+        callback: (response: { credential: string }) => {
+          // Decode the JWT payload to extract the user's email so we can
+          // pass it as login_hint — this pre-selects their account in the
+          // OAuth consent screen, skipping the account chooser.
+          try {
+            const payload = JSON.parse(atob(response.credential.split(".")[1]));
+            signIn("google", undefined, { login_hint: payload.email });
+          } catch {
+            signIn("google");
+          }
         },
       });
-      initializedRef.current = true;
-
-      // Auto-prompt if the user isn't signed in at load time
-      if (status === "unauthenticated") {
-        window.google?.accounts.id.prompt();
-      }
+      setGsiReady(true);
     };
     document.head.appendChild(script);
 
     return () => {
       window.google?.accounts.id.cancel();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally run once
   }, []);
 
-  // If the user signs out after the script was already loaded, auto-prompt again.
+  // Prompt whenever the GIS library is ready and the user is unauthenticated.
+  // Because gsiReady is state (not a ref), this effect re-runs both when
+  // the script finishes loading AND when the session status changes.
   useEffect(() => {
-    if (initializedRef.current && status === "unauthenticated") {
+    if (gsiReady && status === "unauthenticated") {
       window.google?.accounts.id.prompt();
     }
-  }, [status]);
+  }, [gsiReady, status]);
 
   return null;
 }

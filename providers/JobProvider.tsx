@@ -5,8 +5,10 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
+import { useSession } from "next-auth/react";
 import type { JobResponse } from "../app/client/models/JobResponse";
 import type { SongResponse } from "../app/client/models/SongResponse";
 import type { CreateSongRequest } from "../app/client/models/CreateSongRequest";
@@ -35,15 +37,15 @@ interface JobContextValue {
   isLoadingSongs: boolean;
 
   // Actions
-  createJob: () => Promise<void>;
+  createJob: () => Promise<JobResponse | null>;
   setCurrentJob: (jobId: string) => Promise<void>;
   refreshCurrentJob: () => Promise<void>;
   fetchSongs: () => Promise<void>;
-  addSong: (request: CreateSongRequest) => Promise<SongResponse | null>;
+  addSong: (request: CreateSongRequest, jobIdOverride?: string) => Promise<SongResponse | null>;
   removeSong: (songId: string) => Promise<boolean>;
   updateSong: (songId: string, request: UpdateSongRequest) => Promise<SongResponse | null>;
   patchSongLocally: (songId: string, patch: Partial<SongResponse>) => void;
-  updateSongUploadStatus: (songId: string, uploadStatus: UploadStatusEnum) => Promise<SongResponse | null>;
+  updateSongUploadStatus: (songId: string, uploadStatus: UploadStatusEnum, jobIdOverride?: string) => Promise<SongResponse | null>;
   triggerAllin1: () => Promise<void>;
   triggerChord: () => Promise<void>;
   clearCurrentJob: () => void;
@@ -56,6 +58,9 @@ const JobContext = createContext<JobContextValue | null>(null);
 // ---------------------------------------------------------------------------
 
 export function JobProvider({ children }: { children: React.ReactNode }) {
+  const { status } = useSession();
+  const prevStatusRef = useRef(status);
+
   const [currentJob, setCurrentJobState] = useState<JobResponse | null>(null);
   const [currentJobSongs, setCurrentJobSongs] = useState<SongResponse[]>([]);
   const [jobHistory, setJobHistory] = useState<JobResponse[]>([]);
@@ -93,19 +98,35 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     setIsLoadingSongs(false);
   }, []);
 
+  // ---- clear state on sign-out --------------------------------------------
+
+  useEffect(() => {
+    if (prevStatusRef.current !== "unauthenticated" && status === "unauthenticated") {
+      setCurrentJobState(null);
+      setCurrentJobSongs([]);
+      setJobHistory([]);
+      localStorage.removeItem(CURRENT_JOB_KEY);
+    }
+    prevStatusRef.current = status;
+  }, [status]);
+
   // ---- restore persisted job on mount -------------------------------------
 
   useEffect(() => {
+    if (status !== "authenticated") return;
     const persistedJobId = localStorage.getItem(CURRENT_JOB_KEY);
     if (persistedJobId) {
       fetchJobAndSongs(persistedJobId);
     }
-  }, [fetchJobAndSongs]);
+  }, [status, fetchJobAndSongs]);
 
   // ---- actions ------------------------------------------------------------
 
-  const createJob = useCallback(async () => {
-    setIsLoadingJob(true);
+  const createJob = useCallback(async (): Promise<JobResponse | null> => {
+    // Only set loading if a job already exists (new job replaces current job)
+    if (currentJob) {
+      setIsLoadingJob(true);
+    }
     const { data, error } = await api(
       JobsService.createNewJobJobsPost(),
     );
@@ -114,14 +135,16 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
       // eslint-disable-next-line no-console
       console.error("Failed to create job:", error);
       setIsLoadingJob(false);
-      return;
+      return null;
     }
 
+    console.log('Set current job state to ', data);
     setCurrentJobState(data);
     setCurrentJobSongs([]);
     setJobHistory((prev) => [data, ...prev]);
     localStorage.setItem(CURRENT_JOB_KEY, data.jobId);
     setIsLoadingJob(false);
+    return data;
   }, []);
 
   const setCurrentJob = useCallback(
@@ -155,12 +178,12 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
   }, [currentJob]);
 
   const addSong = useCallback(
-    async (request: CreateSongRequest): Promise<SongResponse | null> => {
-      if (!currentJob) return null;
-
+    async (request: CreateSongRequest, jobIdOverride?: string): Promise<SongResponse | null> => {
+      const jobId = jobIdOverride ?? currentJob?.jobId;
+      if (!jobId) return null;
       const { data, error } = await api(
         SongsService.createNewSongJobsJobIdSongsPost({
-          jobId: currentJob.jobId,
+          jobId,
           requestBody: request,
         }),
       );
@@ -236,12 +259,13 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
   );
 
   const updateSongUploadStatus = useCallback(
-    async (songId: string, uploadStatus: UploadStatusEnum): Promise<SongResponse | null> => {
-      if (!currentJob) return null;
+    async (songId: string, uploadStatus: UploadStatusEnum, jobIdOverride?: string): Promise<SongResponse | null> => {
+      const jobId = jobIdOverride ?? currentJob?.jobId;
+      if (!jobId) return null;
 
       const { data, error } = await api(
         SongsService.updateUploadStatusJobsJobIdSongsSongIdUploadStatusPatch({
-          jobId: currentJob.jobId,
+          jobId,
           songId,
           requestBody: { uploadStatus },
         }),

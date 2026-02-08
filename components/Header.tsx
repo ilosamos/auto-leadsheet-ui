@@ -11,8 +11,7 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { IconBrandGoogle, IconLogout, IconUser } from "@tabler/icons-react";
-import { useSession, signOut } from "next-auth/react";
-import { triggerGooglePrompt } from "./GoogleOneTap";
+import { useSession, signOut, signIn } from "next-auth/react";
 
 export function Header() {
   const { data: session, status } = useSession();
@@ -32,7 +31,7 @@ export function Header() {
               variant="light"
               size="xs"
               leftSection={<IconBrandGoogle size={16} />}
-              onClick={() => triggerGooglePrompt()}
+              onClick={() => signIn("google")}
             >
               Sign in with Google
             </Button>

@@ -47,9 +47,10 @@ interface FileItemProps {
 export function FileItem({ song, upload, onRemove, onUpdate }: FileItemProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const status: UploadStatus | "idle" = upload?.status ?? "idle";
-  const progress = upload?.progress ?? (song.audioPath ? 100 : 0);
+  const progress = upload?.progress ?? (song.uploadStatus === "SUCCESS" ? 100 : 0);
 
   const isSongUploadStatusError = song.uploadStatus === "ERROR";
+  const isSongPending = song.allin1Status === "PENDING" || song.chordStatus === "PENDING";
 
   const statusIcon =
     status === "done" || (!upload && song.uploadStatus === "SUCCESS") ? (
@@ -93,13 +94,15 @@ export function FileItem({ song, upload, onRemove, onUpdate }: FileItemProps) {
               size="sm"
               fw={500}
               onSubmit={handleTitleSubmit}
+              disabled={!isSongPending}
             />
             <EditableField
               value={song.artist ?? ""}
               placeholder="Unknown artist"
               size="xs"
-              c="dimmed"
+              c={song.artist ? "inherit" : "red"}
               onSubmit={handleArtistSubmit}
+              disabled={!isSongPending}
             />
             {song.size != null && (
               <Text size="xs" c="dimmed" mt={2}>
@@ -111,7 +114,7 @@ export function FileItem({ song, upload, onRemove, onUpdate }: FileItemProps) {
         <Group gap="xs" style={{ flexShrink: 0 }}>
           {isSongUploadStatusError ? <Text size="xs" c="red">Upload Error</Text> : null}
           {statusIcon}
-          {onRemove && (
+          {onRemove && isSongPending && (
             isDeleting ? (
               <Loader size="xs" color="red" />
             ) : (

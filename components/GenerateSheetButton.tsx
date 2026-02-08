@@ -1,8 +1,10 @@
 "use client";
 
-import { Button, Stack, Text, Tooltip } from "@mantine/core";
-import { IconFileMusic } from "@tabler/icons-react";
+import { Button, SemiCircleProgress, Stack, Text, Tooltip } from "@mantine/core";
+import { IconZoomScan } from "@tabler/icons-react";
 import type { SongResponse } from "../app/client/models/SongResponse";
+import { useCallback, useState } from "react";
+import { JobStatusEnum } from "../app/client";
 
 interface GenerateSheetButtonProps {
   songs: SongResponse[];
@@ -10,6 +12,7 @@ interface GenerateSheetButtonProps {
   loading?: boolean;
   /** Optional status text shown below the button while loading (e.g. "This can take a while…") */
   loadingText?: string;
+  loadingStatus?: JobStatusEnum;
 }
 
 function getDisabledReason(songs: SongResponse[]): string | null {
@@ -28,57 +31,89 @@ export function GenerateSheetButton({
   songs,
   onGenerate,
   loading = false,
+  loadingStatus,
   loadingText,
 }: GenerateSheetButtonProps) {
   const disabledReason = getDisabledReason(songs);
   const isDisabled = disabledReason !== null;
+
+  const percentForStatus = (status?: JobStatusEnum): number => {
+    switch (status) {
+      case "PENDING":
+        return 0;
+      case "TRIGGERED":
+        return 20;
+      case "ANALYZING":
+        return 50;
+      case "SUCCESS":
+        return 100;
+    }
+    return 0;
+  }
+
+  const textForStatus = (status?: JobStatusEnum): string => {
+    switch (status) {
+      case "PENDING":
+        return "";
+      case "TRIGGERED":
+        return "Preparing Songs";
+      case "ANALYZING":
+        return "Analyzing Songs";
+      case "SUCCESS":
+        return "Success";
+    }
+    return "";
+  }
 
   const button = (
     <Button
       size="lg"
       radius="xl"
       fullWidth
+      style={{ maxWidth: '400px' }}
       disabled={isDisabled && !loading}
       loading={loading}
       onClick={onGenerate}
-      leftSection={!loading ? <IconFileMusic size={20} /> : undefined}
-      variant="gradient"
-      gradient={{ from: "violet", to: "cyan", deg: 135 }}
-      styles={{
-        root: {
-          height: 52,
-          fontSize: 16,
-          fontWeight: 600,
-          letterSpacing: 0.3,
-          transition: "transform 150ms ease, box-shadow 150ms ease",
-          "&:not([disabled]):hover": {
-            transform: "translateY(-1px)",
-            boxShadow: "0 4px 20px rgba(99, 102, 241, 0.4)",
-          },
-          "&:not([disabled]):active": {
-            transform: "translateY(0)",
-          },
-        },
-      }}
+      leftSection={!loading ? <IconZoomScan size={24} /> : undefined}
+      variant="filled"
+      color="yellow"
     >
-      "Generate Lead Sheet"
+      Analyze Songs
     </Button>
   );
 
   const wrappedButton =
     isDisabled && !loading ? (
       <Tooltip label={disabledReason} position="top" withArrow>
-        <div>{button}</div>
+        {button}
       </Tooltip>
     ) : (
       button
     );
 
+  const semiCircleProgress = (
+    <SemiCircleProgress
+      fillDirection="left-to-right"
+      orientation="down"
+      filledSegmentColor="red"
+      size={200}
+      thickness={12}
+      value={percentForStatus(loadingStatus)}
+      transitionDuration={250}
+      label={textForStatus(loadingStatus)}
+      labelPosition="center"
+      styles={{
+        label: { marginTop: -40, fontStyle: 'italic', fontSize: '0.9rem' },
+      }}
+    />
+  )
+
   return (
-    <Stack gap={6} align="center">
+    <Stack gap={0} align="center" style={{ width: '100%' }}>
       {wrappedButton}
+      {loadingStatus && semiCircleProgress}
       {loading && loadingText && (
-        <Text size="xs" c="dimmed" ta="center">
+        <Text size="xs" c="dimmed" mt="xs" ta="center">
           {loadingText}
         </Text>
       )}

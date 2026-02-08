@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { Alert, Button, Group, Text, Stack } from "@mantine/core";
 import { Dropzone, type FileWithPath } from "@mantine/dropzone";
 import {
-  IconAlertCircle,
+  IconInfoCircle,
   IconCloudUpload,
   IconDownload,
   IconX,
@@ -72,14 +72,19 @@ function uploadToSignedUrl(
   });
 }
 
-export function FileUpload() {
+interface FileUploadProps {
+  enabled?: boolean;
+  allDone?: boolean
+}
+
+export function FileUpload({ enabled = true, allDone = false }: FileUploadProps) {
   const openRef = useRef<(() => void) | null>(null);
   const [uploads, setUploads] = useState<Map<string, UploadProgress>>(
     () => new Map(),
   );
   const [isUploading, setIsUploading] = useState(false);
   const activeUploadsRef = useRef(0);
-  const { currentJob, currentJobSongs, addSong, removeSong, updateSong, patchSongLocally, updateSongUploadStatus } = useJob();
+  const { currentJob, currentJobSongs, addSong, removeSong, updateSong, patchSongLocally, updateSongUploadStatus, createJob } = useJob();
 
   const updateUpload = useCallback(
     (songId: string, patch: Partial<UploadProgress>) =>
@@ -101,8 +106,8 @@ export function FileUpload() {
   }, []);
 
   const uploadFile = useCallback(
-    async (file: FileWithPath) => {
-      const jobId = currentJob?.jobId;
+    async (file: FileWithPath, jobIdOverride?: string) => {
+      const jobId = jobIdOverride ?? currentJob?.jobId;
       if (!jobId) {
         finishOneUpload();
         return;
@@ -121,7 +126,7 @@ export function FileUpload() {
       } else {
         title = baseName.trim().slice(0, 30);
       }
-      const song = await addSong({ title, artist, originalName, fileType });
+      const song = await addSong({ title, artist, originalName, fileType }, jobId);
       if (!song) {
         finishOneUpload();
         return;
@@ -140,7 +145,7 @@ export function FileUpload() {
         );
         if (urlResult.error) {
           updateUpload(songId, { status: "error", progress: 100 });
-          await updateSongUploadStatus(songId, "ERROR");
+          await updateSongUploadStatus(songId, "ERROR", jobId);
           return;
         }
 
@@ -154,14 +159,14 @@ export function FileUpload() {
         updateUpload(songId, { progress: 100, status: "done" });
 
         // 4. Notify the backend that upload succeeded
-        await updateSongUploadStatus(songId, "SUCCESS");
+        await updateSongUploadStatus(songId, "SUCCESS", jobId);
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error("Upload failed:", err);
         updateUpload(songId, { status: "error", progress: 100 });
 
         // Notify the backend that upload failed
-        await updateSongUploadStatus(songId, "ERROR");
+        await updateSongUploadStatus(songId, "ERROR", jobId);
       } finally {
         finishOneUpload();
       }
@@ -170,23 +175,31 @@ export function FileUpload() {
   );
 
   const handleDrop = useCallback(
-    (droppedFiles: FileWithPath[]) => {
-      if (!currentJob?.jobId) {
-        // eslint-disable-next-line no-console
-        console.error("No active job; create a new session first.");
-        return;
+    async (droppedFiles: FileWithPath[]) => {
+      let jobId = currentJob?.jobId;
+      if (!jobId) {
+        const job = await createJob();
+        if (!job) {
+          notifications.show({
+            title: "Could not create session",
+            message: "Please try again or sign in again.",
+            color: "red",
+          });
+          return;
+        }
+        jobId = job.jobId;
       }
 
-      // Set uploading state immediately before any async work
+      // Set uploading state immediately before starting uploads
       activeUploadsRef.current += droppedFiles.length;
       setIsUploading(true);
 
-      // Start real uploads in parallel
+      // Start real uploads in parallel (pass jobId so uploads work before state has updated)
       droppedFiles.forEach((file) => {
-        uploadFile(file);
+        uploadFile(file, jobId);
       });
     },
-    [currentJob, uploadFile],
+    [currentJob, createJob, uploadFile],
   );
 
   const handleRemoveSong = useCallback(
@@ -318,15 +331,21 @@ export function FileUpload() {
         </Button>
       </div>
 
-      <FileList songs={currentJobSongs} uploads={uploads} onRemove={handleRemoveSong} onUpdate={handleUpdateSong} />
+      <FileList 
+        songs={currentJobSongs} 
+        uploads={uploads} 
+        onRemove={handleRemoveSong}
+        isAccordionOpen={!allDone} 
+        onUpdate={handleUpdateSong} 
+      />
 
       {currentJobSongs.length > 0 &&
         currentJobSongs.some((s) => !s.title?.trim() || !s.artist?.trim()) && (
           <Alert
             variant="light"
-            color="red"
+            color="yellow"
             radius="md"
-            icon={<IconAlertCircle size={18} />}
+            icon={<IconInfoCircle size={18} />}
           >
             Please set a title and artist for every song before generating.
           </Alert>

@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "generate-client": "curl -s http://localhost:8000/openapi.json -o openapi.json && openapi --input openapi.json --output app/client --client fetch --useOptions --useUnionTypes"
+    "generate-client": "curl -s http://localhost:8000/openapi.json -o openapi.json && openapi --input openapi.json --output app/client --client fetch --useOptions --useUnionTypes && rm openapi.json"
   },
   "dependencies": {
     "@mantine/core": "8.3.14",
