@@ -31,18 +31,18 @@ export function EditableField({
 
   // Keep draft in sync with prop when not editing
   useEffect(() => {
-    if (!editing) setDraft(value);
+    if (!editing) { setDraft(value); }
   }, [value, editing]);
 
   // Auto-focus the input when entering edit mode
   useEffect(() => {
-    if (editing) inputRef.current?.focus();
+    if (editing) { inputRef.current?.focus(); }
   }, [editing]);
 
   const commit = useCallback(() => {
     setEditing(false);
     let trimmed = draft.trim();
-    if (maxLength != null && trimmed.length > maxLength) trimmed = trimmed.slice(0, maxLength);
+    if (maxLength != null && trimmed.length > maxLength) { trimmed = trimmed.slice(0, maxLength); }
     if (trimmed && trimmed !== value) {
       onSubmit(trimmed);
     } else {
@@ -63,7 +63,7 @@ export function EditableField({
         onChange={(e) => setDraft(maxLength != null ? e.currentTarget.value.slice(0, maxLength) : e.currentTarget.value)}
         onBlur={commit}
         onKeyDown={(e) => {
-          if (e.key === "Enter") commit();
+          if (e.key === "Enter") { commit(); }
           if (e.key === "Escape") {
             setDraft(value);
             setEditing(false);

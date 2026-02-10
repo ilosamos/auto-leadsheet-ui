@@ -45,14 +45,14 @@ export function Analyze() {
   );
 
   const firstJobStatus = (): JobStatusEnum | null => {
-    if (currentJobSongs.length === 0) return null;
+    if (currentJobSongs.length === 0) { return null; }
     const song = currentJobSongs[0];
-    if (song.chordStatus === "PENDING" || song.allin1Status === "PENDING") return "PENDING";
-    if (song.chordStatus === "TRIGGERED" || song.allin1Status === "TRIGGERED") return "TRIGGERED";
-    if (song.chordStatus === "ANALYZING" || song.allin1Status === "ANALYZING") return "ANALYZING";
-    if (song.chordStatus === "SUCCESS" || song.allin1Status === "SUCCESS") return "SUCCESS";
-    if (song.chordStatus === "FAILED" || song.allin1Status === "FAILED") return "FAILED";
-    if (song.chordStatus === "CANCELLED" || song.allin1Status === "CANCELLED") return "CANCELLED";
+    if (song.chordStatus === "PENDING" || song.allin1Status === "PENDING") { return "PENDING"; }
+    if (song.chordStatus === "TRIGGERED" || song.allin1Status === "TRIGGERED") { return "TRIGGERED"; }
+    if (song.chordStatus === "ANALYZING" || song.allin1Status === "ANALYZING") { return "ANALYZING"; }
+    if (song.chordStatus === "SUCCESS" || song.allin1Status === "SUCCESS") { return "SUCCESS"; }
+    if (song.chordStatus === "FAILED" || song.allin1Status === "FAILED") { return "FAILED"; }
+    if (song.chordStatus === "CANCELLED" || song.allin1Status === "CANCELLED") { return "CANCELLED"; }
     return "PENDING";
   }
 

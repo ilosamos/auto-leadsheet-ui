@@ -4,21 +4,6 @@ import { Stack, Text, Title } from "@mantine/core";
 import { ResultItem } from "./ResultItem";
 import { SongResponse } from "../app/client";
 
-const MOCK_RESULTS: SongResponse[] = [
-  {
-    songId: "result-1",
-    chordStatus: "SUCCESS",
-    allin1Status: "SUCCESS",
-    title: "Take Five",
-    artist: "Dave Brubeck",
-    audioPath: "https://example.com/audio.mp3",
-    chordsPath: "https://example.com/chords.xml",
-    allin1Path: "https://example.com/allin1.pdf",
-    size: 1000000,
-    length: 180,
-  },
-];
-
 interface ResultListProps {
   songs?: SongResponse[];
 }

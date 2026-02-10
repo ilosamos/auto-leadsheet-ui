@@ -61,7 +61,7 @@ export function ResultItem({ song }: ResultItemProps) {
 
   const handleDownload = useCallback(
     async (type: "pdf" | "xml") => {
-      if (!jobId) return;
+      if (!jobId) { return; }
 
       const ext = type === "pdf" ? "sheet.pdf" : "sheet.musicxml";
       const filename = `${song.title ?? song.songId}.${type === "pdf" ? "pdf" : "musicxml"}`;

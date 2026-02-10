@@ -35,7 +35,7 @@ const UserContext = createContext<UserContextValue | null>(null);
  * Must be used inside SessionProvider (and thus AuthSessionProvider).
  */
 function UserProvider({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

@@ -24,7 +24,7 @@ export function GoogleOneTap() {
 
   // Load & initialize the GIS script exactly once.
   useEffect(() => {
-    if (loadedRef.current) return;
+    if (loadedRef.current) { return; }
     loadedRef.current = true;
 
     const script = document.createElement("script");

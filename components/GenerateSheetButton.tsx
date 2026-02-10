@@ -16,13 +16,13 @@ interface GenerateSheetButtonProps {
 }
 
 function getDisabledReason(songs: SongResponse[]): string | null {
-  if (songs.length === 0) return "Add at least one song first";
+  if (songs.length === 0) { return "Add at least one song first"; }
 
   const pendingUploads = songs.filter((s) => s.uploadStatus !== "SUCCESS");
-  if (pendingUploads.length > 0) return "Wait for all uploads to finish";
+  if (pendingUploads.length > 0) { return "Wait for all uploads to finish"; }
 
   const missingMeta = songs.filter((s) => !s.title?.trim() || !s.artist?.trim());
-  if (missingMeta.length > 0) return "Set title and artist for every song";
+  if (missingMeta.length > 0) { return "Set title and artist for every song"; }
 
   return null;
 }

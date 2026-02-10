@@ -16,7 +16,7 @@ export function AppTabs() {
   const handleTabChange = useCallback(
     (next: string | null) => {
       // Prevent "re-selecting" the current tab from causing re-renders / refreshes.
-      if (next === tab) return;
+      if (next === tab) { return; }
       setTab(next);
     },
     [tab],

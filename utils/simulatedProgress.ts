@@ -24,10 +24,10 @@ export function getSimulatedProgressFromSong(
   now: number = Date.now()
 ): number {
   const triggered = song.lastJobTriggered;
-  if (!triggered) return min;
+  if (!triggered) { return min; }
 
   const triggeredMs = new Date(triggered).getTime();
-  if (Number.isNaN(triggeredMs)) return min;
+  if (Number.isNaN(triggeredMs)) { return min; }
 
   const elapsedMs = Math.max(0, now - triggeredMs);
   const elapsedSeconds = elapsedMs / 1000;

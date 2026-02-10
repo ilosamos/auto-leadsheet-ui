@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Group, Paper, ScrollArea, Stack, Text, Title } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
-import type { SongResponse } from "../app/client";
-import { UsersService } from "../app/client";
+import { UsersService, type SongResponse } from "../app/client";
 import { api } from "../app/client/api";
 import { useUser } from "../providers/AuthSessionProvider";
 import { ResultItem } from "./ResultItem";
@@ -61,8 +60,8 @@ export function History({ active, pageSize = 5 }: HistoryProps) {
   }, [pageSize]);
 
   const loadMore = useCallback(async () => {
-    if (!hasMore) return;
-    if (isLoadingMore) return;
+    if (!hasMore) { return; }
+    if (isLoadingMore) { return; }
 
     const generationAtStart = generationRef.current;
     setError(null);
@@ -110,11 +109,11 @@ export function History({ active, pageSize = 5 }: HistoryProps) {
 
   // Auto-load only if active and no data yet.
   useEffect(() => {
-    if (!active) return;
-    if (songs.length > 0) return;
-    if (isLoadingInitial) return;
-    if (error !== null) return;
-    if (hasAutoLoadedOnceRef.current) return;
+    if (!active) { return; }
+    if (songs.length > 0) { return; }
+    if (isLoadingInitial) { return; }
+    if (error !== null) { return; }
+    if (hasAutoLoadedOnceRef.current) { return; }
     hasAutoLoadedOnceRef.current = true;
     generationRef.current += 1;
     void refresh();

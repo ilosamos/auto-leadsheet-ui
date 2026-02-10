@@ -108,7 +108,7 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
   // ---- restore persisted job on mount -------------------------------------
 
   useEffect(() => {
-    if (status !== "authenticated") return;
+    if (status !== "authenticated") { return; }
     const persistedJobId = localStorage.getItem(CURRENT_JOB_KEY);
     if (persistedJobId) {
       fetchJobAndSongs(persistedJobId);
@@ -150,12 +150,12 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
   );
 
   const refreshCurrentJob = useCallback(async () => {
-    if (!currentJob) return;
+    if (!currentJob) { return; }
     await fetchJobAndSongs(currentJob.jobId);
   }, [currentJob, fetchJobAndSongs]);
 
   const fetchSongs = useCallback(async () => {
-    if (!currentJob) return;
+    if (!currentJob) { return; }
     setIsLoadingSongs(true);
 
     const { data, error } = await api(
@@ -174,7 +174,7 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
   const addSong = useCallback(
     async (request: CreateSongRequest, jobIdOverride?: string): Promise<{ song: SongResponse | null, error: ApiError | null}> => {
       const jobId = jobIdOverride ?? currentJob?.jobId;
-      if (!jobId) return { song: null, error: null };
+      if (!jobId) { return { song: null, error: null }; }
       const { data, error } = await api(
         SongsService.createNewSongJobsJobIdSongsPost({
           jobId,
@@ -194,7 +194,7 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
 
   const removeSong = useCallback(
     async (songId: string): Promise<boolean> => {
-      if (!currentJob) return false;
+      if (!currentJob) { return false; }
 
       const { error } = await api(
         SongsService.deleteSongEndpointJobsJobIdSongsSongIdDelete({
@@ -217,7 +217,7 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
 
   const updateSong = useCallback(
     async (songId: string, request: UpdateSongRequest): Promise<SongResponse | null> => {
-      if (!currentJob) return null;
+      if (!currentJob) { return null; }
 
       const { data, error } = await api(
         SongsService.updateSongEndpointJobsJobIdSongsSongIdPatch({
@@ -253,7 +253,7 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
   const updateSongUploadStatus = useCallback(
     async (songId: string, uploadStatus: UploadStatusEnum, jobIdOverride?: string): Promise<SongResponse | null> => {
       const jobId = jobIdOverride ?? currentJob?.jobId;
-      if (!jobId) return null;
+      if (!jobId) { return null; }
 
       const { data, error } = await api(
         SongsService.updateUploadStatusJobsJobIdSongsSongIdUploadStatusPatch({
@@ -279,7 +279,7 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
   );
 
   const triggerAnalysisJobs = useCallback(async (): Promise<Error | null> => {
-    if (!currentJob) return null;
+    if (!currentJob) { return null; }
 
     // 1. Set all songs to TRIGGERED for both allin1 and chord
     setCurrentJobSongs((prev) =>
