@@ -52,6 +52,7 @@ async function downloadFile(url: string, filename: string) {
 export function ResultItem({ song }: ResultItemProps) {
   const { currentJob } = useJob();
   const [downloading, setDownloading] = useState<"pdf" | "xml" | null>(null);
+  const jobId = song.jobId ?? currentJob?.jobId ?? null;
 
   const placeholderImageUrl = () => {
     const letter = song.title?.charAt(0).toUpperCase();
@@ -60,11 +61,11 @@ export function ResultItem({ song }: ResultItemProps) {
 
   const handleDownload = useCallback(
     async (type: "pdf" | "xml") => {
-      if (!currentJob) return;
+      if (!jobId) return;
 
       const ext = type === "pdf" ? "sheet.pdf" : "sheet.musicxml";
       const filename = `${song.title ?? song.songId}.${type === "pdf" ? "pdf" : "musicxml"}`;
-      const url = `${OpenAPI.BASE}/jobs/${currentJob.jobId}/songs/${song.songId}/${ext}`;
+      const url = `${OpenAPI.BASE}/jobs/${jobId}/songs/${song.songId}/${ext}`;
 
       setDownloading(type);
       try {
@@ -76,7 +77,7 @@ export function ResultItem({ song }: ResultItemProps) {
         setDownloading(null);
       }
     },
-    [currentJob, song.songId, song.title],
+    [jobId, song.songId, song.title],
   );
 
   return (

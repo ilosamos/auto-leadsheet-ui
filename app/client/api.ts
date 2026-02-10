@@ -1,7 +1,7 @@
 import { signOut } from "next-auth/react";
 import type { ApiError } from "./core/ApiError";
 
-type ApiResult<T> =
+export type ApiResult<T> =
   | { data: T; error: null }
   | { data: null; error: ApiError };
 

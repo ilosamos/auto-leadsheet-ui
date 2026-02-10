@@ -1,30 +1,89 @@
 "use client";
 
-import { Button, Center, Group, Loader, Stack, Text } from "@mantine/core";
+import { useRef, useEffect, useState } from "react";
+import { Button, Center, Group, Loader, Modal, Stack, Text } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useJob } from "../providers/JobProvider";
 import { FileUpload } from "./FileUpload";
 import { ResultList } from "./ResultList";
 import { GenerateSheetButton } from "./GenerateSheetButton";
+import { showNotification } from "@mantine/notifications";
+import { JobStatusEnum } from "../app/client";
+
+const POLL_INTERVAL_MS = 5000;
 
 export function Analyze() {
-  const { isLoadingJob, isLoadingSongs, currentJobSongs, createJob } = useJob();
-  const isLoading = isLoadingJob || isLoadingSongs;
+  const { isLoadingJob, currentJobSongs, createJob, fetchSongs, triggerAnalysisJobs } = useJob();
+  const pollerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [newSessionModalOpen, setNewSessionModalOpen] = useState(false);
+  const isLoading = isLoadingJob;
+
+  const handleNewSessionClick = () => setNewSessionModalOpen(true);
+  const handleNewSessionConfirm = () => {
+    createJob();
+    setNewSessionModalOpen(false);
+  };
+  const handleNewSessionCancel = () => setNewSessionModalOpen(false);
 
   const finishedSongs = currentJobSongs.filter(
     (s) => s.chordStatus === "SUCCESS" && s.allin1Status === "SUCCESS",
   );
-  const allSongsFinished = currentJobSongs.every(
-    (s) => s.chordStatus === "SUCCESS" && s.allin1Status === "SUCCESS",
+
+  const isAllDoneOrFailed = currentJobSongs.every(
+    (s) => s.chordStatus === "SUCCESS" || s.allin1Status === "SUCCESS"
+    || s.chordStatus === "FAILED" || s.allin1Status === "FAILED"
+  );
+
+  const isNothingRunning = currentJobSongs.every(
+    (s) => (s.chordStatus === "SUCCESS" && s.allin1Status === "SUCCESS") 
+    || (s.chordStatus === "FAILED" && s.allin1Status === "FAILED")
+    || (s.chordStatus === "CANCELLED" && s.allin1Status === "CANCELLED")
+    || (s.chordStatus === "PENDING" && s.allin1Status === "PENDING"),
   );
   const allSongsPending = currentJobSongs.every(
     (s) => s.chordStatus === "PENDING" && s.allin1Status === "PENDING",
   );
-  const allSongsRunning = !allSongsPending && !allSongsFinished;
-  const firstJobStatus =
-    currentJobSongs[0]?.chordStatus ??
-    currentJobSongs[0]?.allin1Status ??
-    "PENDING";
+
+  const firstJobStatus = (): JobStatusEnum | null => {
+    if (currentJobSongs.length === 0) return null;
+    const song = currentJobSongs[0];
+    if (song.chordStatus === "PENDING" || song.allin1Status === "PENDING") return "PENDING";
+    if (song.chordStatus === "TRIGGERED" || song.allin1Status === "TRIGGERED") return "TRIGGERED";
+    if (song.chordStatus === "ANALYZING" || song.allin1Status === "ANALYZING") return "ANALYZING";
+    if (song.chordStatus === "SUCCESS" || song.allin1Status === "SUCCESS") return "SUCCESS";
+    if (song.chordStatus === "FAILED" || song.allin1Status === "FAILED") return "FAILED";
+    if (song.chordStatus === "CANCELLED" || song.allin1Status === "CANCELLED") return "CANCELLED";
+    return "PENDING";
+  }
+
+  const handleGenerate = async () => {
+    const error = await triggerAnalysisJobs();
+    if (error) {
+      showNotification({
+        title: "Error",
+        message: "There was an error triggering the analysis jobs. Please try again.",
+        color: "red",
+      });
+    }
+  };
+
+  // Single poller: when any song is in progress, refresh songs every POLL_INTERVAL_MS.
+  // Cleanup ensures only one interval is ever active; re-running when allSongsRunning
+  // becomes true again starts a fresh poller.
+  useEffect(() => {
+    if (isNothingRunning) {
+      pollerRef.current = null;
+      return;
+    }
+    const id = setInterval(() => {
+      fetchSongs();
+    }, POLL_INTERVAL_MS);
+    pollerRef.current = id;
+    return () => {
+      clearInterval(id);
+      pollerRef.current = null;
+    };
+  }, [isNothingRunning, fetchSongs]);
 
   if (isLoading) {
     return (
@@ -41,26 +100,41 @@ export function Analyze() {
 
   return (
     <Stack gap="xl">
+      <Modal
+        opened={newSessionModalOpen}
+        onClose={handleNewSessionCancel}
+        title="New Session"
+        centered
+      >
+        <Text size="sm" c="dimmed" mb="md">
+          Start a new session? This will replace your current job and songs.
+        </Text>
+        <Group justify="flex-end" gap="xs">
+          <Button variant="default" onClick={handleNewSessionCancel}>
+            No
+          </Button>
+          <Button variant="filled" onClick={handleNewSessionConfirm} loading={isLoadingJob}>
+            Yes
+          </Button>
+        </Group>
+      </Modal>
       <Group justify="flex-end">
         <Button
           variant="filled"
           leftSection={<IconPlus size={16} />}
-          onClick={createJob}
-          loading={isLoadingJob}
+          onClick={handleNewSessionClick}
         >
           New Session
         </Button>
       </Group>
-      <FileUpload enabled={allSongsFinished} />
-      {currentJobSongs.length > 0 && (
+      <FileUpload enabled={allSongsPending || false} allDone={!allSongsPending} />
+      {currentJobSongs.length > 0 && !isAllDoneOrFailed && (
         <GenerateSheetButton
           songs={currentJobSongs}
-          loading={allSongsRunning}
+          loading={!isNothingRunning}
           loadingText="This may take a few minutes"
-          loadingStatus={firstJobStatus}
-          onGenerate={() => {
-            // TODO: wire up actual sheet generation
-          }}
+          loadingStatus={firstJobStatus() ?? "PENDING"}
+          onGenerate={handleGenerate}
         />
       )}
       <ResultList songs={finishedSongs} />

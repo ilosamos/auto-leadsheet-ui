@@ -16,6 +16,7 @@ import { useJob } from "../providers/JobProvider";
 import { SongsService } from "../app/client/services/SongsService";
 import { api } from "../app/client/api";
 import type { UpdateSongRequest } from "../app/client/models/UpdateSongRequest";
+import { uploadToSignedUrl } from "../utils/uploadToSignedUrl";
 
 const ACCEPTED_MIME_TYPES = [
   "audio/mpeg",
@@ -37,39 +38,6 @@ function mimeToFileType(mime: string): string {
     "audio/x-m4a": "m4a",
   };
   return map[mime] ?? "mp3";
-}
-
-/** Upload a file to a signed URL with progress tracking via XMLHttpRequest. */
-function uploadToSignedUrl(
-  file: File,
-  signedUrl: string,
-  contentType: string,
-  onProgress: (progress: number) => void,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("PUT", signedUrl);
-    xhr.setRequestHeader("Content-Type", contentType);
-
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) {
-        onProgress((e.loaded / e.total) * 100);
-      }
-    });
-
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve();
-      } else {
-        reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
-      }
-    });
-
-    xhr.addEventListener("error", () => reject(new Error("Upload network error")));
-    xhr.addEventListener("abort", () => reject(new Error("Upload aborted")));
-
-    xhr.send(file);
-  });
 }
 
 interface FileUploadProps {
@@ -121,12 +89,25 @@ export function FileUpload({ enabled = true, allDone = false }: FileUploadProps)
       let title: string;
       let artist: string | undefined;
       if (dashIndex !== -1) {
-        title = baseName.slice(0, dashIndex).trim().slice(0, 30);
-        artist = baseName.slice(dashIndex + 1).trim().slice(0, 30) || undefined;
+        title = baseName.slice(0, dashIndex).trim().slice(0, 50);
+        artist = baseName.slice(dashIndex + 1).trim().slice(0, 50) || undefined;
       } else {
-        title = baseName.trim().slice(0, 30);
+        title = baseName.trim().slice(0, 50);
       }
-      const song = await addSong({ title, artist, originalName, fileType }, jobId);
+      const { song, error } = await addSong(
+        { title, artist, originalName, fileType, size: file.size },
+        jobId,
+      );
+      if (error) {
+        finishOneUpload();
+        notifications.show({
+          title: "Failed to upload song",
+          message: error.body.detail,
+          color: "red",
+        });
+        return;
+      }
+
       if (!song) {
         finishOneUpload();
         return;
@@ -250,15 +231,27 @@ export function FileUpload({ enabled = true, allDone = false }: FileUploadProps)
   );
 
   return (
-    <Stack gap="xl">
-      <div style={{ position: "relative" }}>
+    <Stack gap="0">
+      <div
+        style={{
+          position: "relative",
+          maxHeight: enabled ? 500 : 0,
+          overflow: "hidden",
+          opacity: enabled ? 1 : 0,
+          transform: enabled ? "scaleY(1)" : "scaleY(0)",
+          transformOrigin: "top",
+          transition: "max-height 0.3s ease, opacity 0.25s ease, transform 0.25s ease, margin-bottom 0.3s ease, padding-bottom 0.3s ease",
+          paddingBottom: enabled ? 20 : 0,
+          marginBottom: enabled ? 20 : 0
+        }}
+      >
         <Dropzone
           openRef={openRef}
           onDrop={handleDrop}
           accept={ACCEPTED_MIME_TYPES}
           maxSize={100 * 1024 * 1024}
           radius="md"
-          disabled={isUploading}
+          disabled={isUploading || !enabled}
           aria-label="Drop audio files here"
         >
           <div style={{ pointerEvents: "none" }}>
@@ -323,7 +316,7 @@ export function FileUpload({ enabled = true, allDone = false }: FileUploadProps)
           onClick={() => openRef.current?.()}
           style={{
             position: "absolute",
-            bottom: -20,
+            bottom: 0,
             left: "calc(50% - 65px)",
           }}
         >
@@ -346,6 +339,7 @@ export function FileUpload({ enabled = true, allDone = false }: FileUploadProps)
             color="yellow"
             radius="md"
             icon={<IconInfoCircle size={18} />}
+            mt="md"
           >
             Please set a title and artist for every song before generating.
           </Alert>

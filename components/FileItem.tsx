@@ -93,6 +93,7 @@ export function FileItem({ song, upload, onRemove, onUpdate }: FileItemProps) {
               placeholder="Untitled"
               size="sm"
               fw={500}
+              maxLength={50}
               onSubmit={handleTitleSubmit}
               disabled={!isSongPending}
             />
@@ -101,6 +102,7 @@ export function FileItem({ song, upload, onRemove, onUpdate }: FileItemProps) {
               placeholder="Unknown artist"
               size="xs"
               c={song.artist ? "inherit" : "red"}
+              maxLength={50}
               onSubmit={handleArtistSubmit}
               disabled={!isSongPending}
             />

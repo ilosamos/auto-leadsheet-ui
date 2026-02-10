@@ -6,12 +6,26 @@ import {
   IconMicrophone2,
   IconSettings,
 } from "@tabler/icons-react";
+import { useCallback, useState } from "react";
 import { Analyze } from "./Analyze";
+import { History } from "./History";
 
 export function AppTabs() {
+  const [tab, setTab] = useState<string | null>("analyze");
+
+  const handleTabChange = useCallback(
+    (next: string | null) => {
+      // Prevent "re-selecting" the current tab from causing re-renders / refreshes.
+      if (next === tab) return;
+      setTab(next);
+    },
+    [tab],
+  );
+
   return (
     <Tabs
-      defaultValue="analyze"
+      value={tab}
+      onChange={handleTabChange}
       orientation="vertical"
       variant="outline"
       placement="left"
@@ -29,17 +43,15 @@ export function AppTabs() {
         </Tabs.Tab>
       </Tabs.List>
 
-      <Tabs.Panel value="analyze" pl="md">
+      <Tabs.Panel value="analyze" pl="md" keepMounted>
         <Analyze />
       </Tabs.Panel>
 
-      <Tabs.Panel value="history" pl="md">
-        <Text c="dimmed" size="sm">
-          Your previous analyses will appear here.
-        </Text>
+      <Tabs.Panel value="history" pl="md" keepMounted>
+        <History active={tab === "history"} />
       </Tabs.Panel>
 
-      <Tabs.Panel value="settings" pl="md">
+      <Tabs.Panel value="settings" pl="md" keepMounted>
         <Text c="dimmed" size="sm">
           Settings coming soon.
         </Text>

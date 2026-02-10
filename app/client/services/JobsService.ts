@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { CancelJobResponse } from '../models/CancelJobResponse';
 import type { JobResponse } from '../models/JobResponse';
 import type { JobStatusResponse } from '../models/JobStatusResponse';
 import type { RunJobResponse } from '../models/RunJobResponse';
@@ -101,6 +102,32 @@ export class JobsService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/jobs/{job_id}/run-chord',
+            path: {
+                'job_id': jobId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * Cancel Job Executions
+     * Cancel all running Cloud Run job executions for this job.
+     *
+     * Uses execution IDs from allin1_execution and chord_execution. Executions that
+     * are already finished or not found are skipped. Resets allin1 and chord status
+     * of all songs in the job to PENDING.
+     * @returns CancelJobResponse Successful Response
+     * @throws ApiError
+     */
+    public static cancelJobExecutionsJobsJobIdCancelPost({
+        jobId,
+    }: {
+        jobId: string,
+    }): CancelablePromise<CancelJobResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/jobs/{job_id}/cancel',
             path: {
                 'job_id': jobId,
             },

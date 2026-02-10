@@ -34,6 +34,18 @@ export class UsersService {
         });
     }
     /**
+     * Get Me
+     * Get the authenticated user's profile from Firestore.
+     * @returns UserResponse Successful Response
+     * @throws ApiError
+     */
+    public static getMeUsersMeGet(): CancelablePromise<UserResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/users/me',
+        });
+    }
+    /**
      * List My Songs
      * List songs the authenticated user is a member of, newest first.
      *

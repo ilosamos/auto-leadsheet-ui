@@ -12,9 +12,15 @@ import {
 } from "@mantine/core";
 import { IconBrandGoogle, IconLogout, IconUser } from "@tabler/icons-react";
 import { useSession, signOut, signIn } from "next-auth/react";
+import { useUser } from "../providers/AuthSessionProvider";
 
 export function Header() {
   const { data: session, status } = useSession();
+  const { user } = useUser();
+
+  const userEmail = user?.email ?? session?.user?.email;
+  const userName = user?.name ?? session?.user?.name;
+  const userImage = user?.image ?? session?.user?.image;
 
   return (
     <header>
@@ -45,21 +51,21 @@ export function Header() {
                     <Avatar
                       size="sm"
                       radius="xl"
-                      src={session.user.image}
-                      alt={session.user.name ?? "User"}
+                      src={userImage}
+                      alt={userName ?? "User"}
                       color="blue"
                     >
                       <IconUser size={16} />
                     </Avatar>
                     <Text size="sm" fw={500}>
-                      {session.user.name ?? "User"}
+                      {userName ?? "User"}
                     </Text>
                   </Group>
                 </UnstyledButton>
               </Menu.Target>
 
               <Menu.Dropdown>
-                <Menu.Label>{session.user.email}</Menu.Label>
+                <Menu.Label>{userEmail}</Menu.Label>
                 <Menu.Item leftSection={<IconUser size={14} />}>
                   Profile
                 </Menu.Item>

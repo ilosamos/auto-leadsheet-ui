@@ -9,6 +9,8 @@ export type CreateSongRequest = {
     title?: (string | null);
     artist?: (string | null);
     originalName?: (string | null);
+    size?: (number | null);
+    length?: (number | null);
     fileType?: string;
 };
 

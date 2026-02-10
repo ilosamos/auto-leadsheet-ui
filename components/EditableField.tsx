@@ -10,6 +10,7 @@ interface EditableFieldProps {
   size?: "sm" | "xs";
   fw?: number;
   c?: string;
+  maxLength?: number;
   onSubmit: (value: string) => void;
   disabled?: boolean;
 }
@@ -20,6 +21,7 @@ export function EditableField({
   size = "sm",
   fw,
   c,
+  maxLength,
   disabled = false,
   onSubmit,
 }: EditableFieldProps) {
@@ -39,13 +41,14 @@ export function EditableField({
 
   const commit = useCallback(() => {
     setEditing(false);
-    const trimmed = draft.trim();
+    let trimmed = draft.trim();
+    if (maxLength != null && trimmed.length > maxLength) trimmed = trimmed.slice(0, maxLength);
     if (trimmed && trimmed !== value) {
       onSubmit(trimmed);
     } else {
       setDraft(value);
     }
-  }, [draft, value, onSubmit]);
+  }, [draft, value, maxLength, onSubmit]);
 
   if (editing) {
     return (
@@ -56,7 +59,8 @@ export function EditableField({
         value={draft}
         placeholder={placeholder}
         disabled={disabled}
-        onChange={(e) => setDraft(e.currentTarget.value)}
+        maxLength={maxLength}
+        onChange={(e) => setDraft(maxLength != null ? e.currentTarget.value.slice(0, maxLength) : e.currentTarget.value)}
         onBlur={commit}
         onKeyDown={(e) => {
           if (e.key === "Enter") commit();

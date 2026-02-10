@@ -3,8 +3,8 @@
 import { Button, SemiCircleProgress, Stack, Text, Tooltip } from "@mantine/core";
 import { IconZoomScan } from "@tabler/icons-react";
 import type { SongResponse } from "../app/client/models/SongResponse";
-import { useCallback, useState } from "react";
 import { JobStatusEnum } from "../app/client";
+import { getSimulatedProgressFromSong } from "../utils/simulatedProgress";
 
 interface GenerateSheetButtonProps {
   songs: SongResponse[];
@@ -36,17 +36,18 @@ export function GenerateSheetButton({
 }: GenerateSheetButtonProps) {
   const disabledReason = getDisabledReason(songs);
   const isDisabled = disabledReason !== null;
+  const simulatedProgress = getSimulatedProgressFromSong(songs[0], 25, 90, 180);
 
   const percentForStatus = (status?: JobStatusEnum): number => {
     switch (status) {
       case "PENDING":
         return 0;
       case "TRIGGERED":
-        return 20;
+        return 10;
       case "ANALYZING":
-        return 50;
+        return simulatedProgress;
       case "SUCCESS":
-        return 100;
+        return 90;
     }
     return 0;
   }
@@ -60,7 +61,7 @@ export function GenerateSheetButton({
       case "ANALYZING":
         return "Analyzing Songs";
       case "SUCCESS":
-        return "Success";
+        return "Almost done!";
     }
     return "";
   }
@@ -76,7 +77,7 @@ export function GenerateSheetButton({
       onClick={onGenerate}
       leftSection={!loading ? <IconZoomScan size={24} /> : undefined}
       variant="filled"
-      color="yellow"
+      color="cyan"
     >
       Analyze Songs
     </Button>
@@ -95,7 +96,7 @@ export function GenerateSheetButton({
     <SemiCircleProgress
       fillDirection="left-to-right"
       orientation="down"
-      filledSegmentColor="red"
+      filledSegmentColor="cyan"
       size={200}
       thickness={12}
       value={percentForStatus(loadingStatus)}
@@ -111,7 +112,7 @@ export function GenerateSheetButton({
   return (
     <Stack gap={0} align="center" style={{ width: '100%' }}>
       {wrappedButton}
-      {loadingStatus && semiCircleProgress}
+      {loading && loadingStatus && semiCircleProgress}
       {loading && loadingText && (
         <Text size="xs" c="dimmed" mt="xs" ta="center">
           {loadingText}

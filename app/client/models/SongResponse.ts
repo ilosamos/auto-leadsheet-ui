@@ -14,6 +14,7 @@ export type SongResponse = {
     chordStatus: JobStatusEnum;
     allin1Status: JobStatusEnum;
     createdAt?: (string | null);
+    lastJobTriggered?: (string | null);
     title?: (string | null);
     artist?: (string | null);
     size?: (number | null);

@@ -17,6 +17,7 @@ import type { UploadStatusEnum } from "../app/client/models/UploadStatusEnum";
 import { JobsService } from "../app/client/services/JobsService";
 import { SongsService } from "../app/client/services/SongsService";
 import { api } from "../app/client/api";
+import { ApiError } from "../app/client/core/ApiError";
 
 const CURRENT_JOB_KEY = "auto-leadsheet:currentJobId";
 
@@ -29,9 +30,6 @@ interface JobContextValue {
   currentJob: JobResponse | null;
   currentJobSongs: SongResponse[];
 
-  // Job history (in-memory, resets on refresh)
-  jobHistory: JobResponse[];
-
   // Loading flags
   isLoadingJob: boolean;
   isLoadingSongs: boolean;
@@ -41,13 +39,12 @@ interface JobContextValue {
   setCurrentJob: (jobId: string) => Promise<void>;
   refreshCurrentJob: () => Promise<void>;
   fetchSongs: () => Promise<void>;
-  addSong: (request: CreateSongRequest, jobIdOverride?: string) => Promise<SongResponse | null>;
+  addSong: (request: CreateSongRequest, jobIdOverride?: string) => Promise<{ song: SongResponse | null, error: ApiError | null }>;
   removeSong: (songId: string) => Promise<boolean>;
   updateSong: (songId: string, request: UpdateSongRequest) => Promise<SongResponse | null>;
   patchSongLocally: (songId: string, patch: Partial<SongResponse>) => void;
   updateSongUploadStatus: (songId: string, uploadStatus: UploadStatusEnum, jobIdOverride?: string) => Promise<SongResponse | null>;
-  triggerAllin1: () => Promise<void>;
-  triggerChord: () => Promise<void>;
+  triggerAnalysisJobs: () => Promise<Error | null>;
   clearCurrentJob: () => void;
 }
 
@@ -63,7 +60,6 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
 
   const [currentJob, setCurrentJobState] = useState<JobResponse | null>(null);
   const [currentJobSongs, setCurrentJobSongs] = useState<SongResponse[]>([]);
-  const [jobHistory, setJobHistory] = useState<JobResponse[]>([]);
   const [isLoadingJob, setIsLoadingJob] = useState(false);
   const [isLoadingSongs, setIsLoadingSongs] = useState(false);
 
@@ -104,7 +100,6 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     if (prevStatusRef.current !== "unauthenticated" && status === "unauthenticated") {
       setCurrentJobState(null);
       setCurrentJobSongs([]);
-      setJobHistory([]);
       localStorage.removeItem(CURRENT_JOB_KEY);
     }
     prevStatusRef.current = status;
@@ -141,7 +136,6 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     console.log('Set current job state to ', data);
     setCurrentJobState(data);
     setCurrentJobSongs([]);
-    setJobHistory((prev) => [data, ...prev]);
     localStorage.setItem(CURRENT_JOB_KEY, data.jobId);
     setIsLoadingJob(false);
     return data;
@@ -178,9 +172,9 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
   }, [currentJob]);
 
   const addSong = useCallback(
-    async (request: CreateSongRequest, jobIdOverride?: string): Promise<SongResponse | null> => {
+    async (request: CreateSongRequest, jobIdOverride?: string): Promise<{ song: SongResponse | null, error: ApiError | null}> => {
       const jobId = jobIdOverride ?? currentJob?.jobId;
-      if (!jobId) return null;
+      if (!jobId) return { song: null, error: null };
       const { data, error } = await api(
         SongsService.createNewSongJobsJobIdSongsPost({
           jobId,
@@ -189,13 +183,11 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
       );
 
       if (error) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to add song:", error);
-        return null;
+        return { song: null, error };
       }
 
       setCurrentJobSongs((prev) => [...prev, data]);
-      return data;
+      return { song: data, error: null };
     },
     [currentJob],
   );
@@ -286,34 +278,56 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     [currentJob],
   );
 
-  const triggerAllin1 = useCallback(async () => {
-    if (!currentJob) return;
+  const triggerAnalysisJobs = useCallback(async (): Promise<Error | null> => {
+    if (!currentJob) return null;
 
-    const { error } = await api(
-      JobsService.triggerAllin1JobJobsJobIdRunAllin1Post({
-        jobId: currentJob.jobId,
-      }),
+    // 1. Set all songs to TRIGGERED for both allin1 and chord
+    setCurrentJobSongs((prev) =>
+      prev.map((s) => ({
+        ...s,
+        allin1Status: "TRIGGERED",
+        chordStatus: "TRIGGERED",
+      })),
     );
 
-    if (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to trigger allin1:", error);
+    // 2. Trigger both requests in parallel
+    const [allin1Result, chordResult] = await Promise.all([
+      api(
+        JobsService.triggerAllin1JobJobsJobIdRunAllin1Post({
+          jobId: currentJob.jobId,
+        }),
+      ),
+      api(
+        JobsService.triggerChordJobJobsJobIdRunChordPost({
+          jobId: currentJob.jobId,
+        }),
+      ),
+    ]);
+
+    const allin1Error = allin1Result.error;
+    const chordError = chordResult.error;
+
+    if (allin1Error || chordError) {
+      // 3. On any failure: cancel both job executions, revert statuses, throw
+      await api(
+        JobsService.cancelJobExecutionsJobsJobIdCancelPost({
+          jobId: currentJob.jobId,
+        }),
+      );
+
+      setCurrentJobSongs((prev) =>
+        prev.map((s) => ({
+          ...s,
+          allin1Status: "PENDING",
+          chordStatus: "PENDING",
+        })),
+      );
+
+      const err = allin1Error ?? chordError ?? null;
+      return err;
     }
-  }, [currentJob]);
 
-  const triggerChord = useCallback(async () => {
-    if (!currentJob) return;
-
-    const { error } = await api(
-      JobsService.triggerChordJobJobsJobIdRunChordPost({
-        jobId: currentJob.jobId,
-      }),
-    );
-
-    if (error) {
-      // eslint-disable-next-line no-console
-      console.error("Failed to trigger chord:", error);
-    }
+    return null;
   }, [currentJob]);
 
   const clearCurrentJob = useCallback(() => {
@@ -327,7 +341,6 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
   const value: JobContextValue = {
     currentJob,
     currentJobSongs,
-    jobHistory,
     isLoadingJob,
     isLoadingSongs,
     createJob,
@@ -339,8 +352,7 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     updateSong,
     patchSongLocally,
     updateSongUploadStatus,
-    triggerAllin1,
-    triggerChord,
+    triggerAnalysisJobs,
     clearCurrentJob,
   };
 
