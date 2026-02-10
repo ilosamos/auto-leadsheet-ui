@@ -127,7 +127,7 @@ export function History({ active, pageSize = 6 }: HistoryProps) {
 
   return (
     // Fixed-height panel: header stays anchored, list scrolls inside.
-    <Stack gap="sm" pb="xs" style={{ height: "64vh" }}>
+    <Stack gap="md" pb="xs" style={{ height: "64vh" }}>
       <Paper withBorder radius="md" p="sm" shadow="xs" maw="648" bg="gray.9">
         <Group justify="space-between" align="center" wrap="nowrap">
           <div style={{ minWidth: 0 }}>
@@ -172,16 +172,7 @@ export function History({ active, pageSize = 6 }: HistoryProps) {
         style={{ flex: 1 }}
       >
         <Stack gap="sm" pr="sm" pb="xs">
-          {isLoadingInitial && error === null && songs.length === 0 ? (
-            <Center py="xl">
-              <Stack align="center" gap="sm">
-                <Text size="sm" c="dimmed">
-                  Loading your songs…
-                </Text>
-                <Loader size="md" />
-              </Stack>
-            </Center>
-          ) : !error && songs.length === 0 ? (
+          {!error && !isLoadingInitial && songs.length === 0 ? (
             <Text size="sm" c="dimmed">
               No songs yet.
             </Text>

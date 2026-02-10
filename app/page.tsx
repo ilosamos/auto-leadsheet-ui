@@ -20,7 +20,6 @@ export default function HomePage() {
 
   return (
     <Container size={740} py="xl">
-      <Button onClick={handleTestCall}>Test: Create Job</Button>
       <Stack gap="xl">
         <HeroHeader />
         <AppTabs />

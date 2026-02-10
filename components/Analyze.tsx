@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { Button, Center, Group, Loader, Modal, Stack, Text } from "@mantine/core";
+import { Button, Center, Group, Loader, Modal, Paper, Stack, Text, Title } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useJob } from "../providers/JobProvider";
 import { FileUpload } from "./FileUpload";
@@ -29,7 +29,7 @@ export function Analyze() {
     (s) => s.chordStatus === "SUCCESS" && s.allin1Status === "SUCCESS",
   );
 
-  const isAllDoneOrFailed = currentJobSongs.every(
+  const isAllDoneOrFailed = currentJobSongs.length > 0 && currentJobSongs.every(
     (s) => s.chordStatus === "SUCCESS" || s.allin1Status === "SUCCESS"
     || s.chordStatus === "FAILED" || s.allin1Status === "FAILED"
   );
@@ -99,7 +99,7 @@ export function Analyze() {
   }
 
   return (
-    <Stack gap="xl">
+    <Stack gap="md">
       <Modal
         opened={newSessionModalOpen}
         onClose={handleNewSessionCancel}
@@ -107,7 +107,7 @@ export function Analyze() {
         centered
       >
         <Text size="sm" c="dimmed" mb="md">
-          Start a new session? This will replace your current job and songs.
+          Start a new session? This will replace your current job and songs, but you can still view them in your history.
         </Text>
         <Group justify="flex-end" gap="xs">
           <Button variant="default" onClick={handleNewSessionCancel}>
@@ -118,15 +118,26 @@ export function Analyze() {
           </Button>
         </Group>
       </Modal>
-      <Group justify="flex-end">
-        <Button
-          variant="filled"
-          leftSection={<IconPlus size={16} />}
-          onClick={handleNewSessionClick}
-        >
-          New Session
-        </Button>
-      </Group>
+      <Paper withBorder radius="md" p="sm" shadow="xs" bg="gray.9">
+        <Group justify="space-between" align="center" wrap="nowrap">
+          <div style={{ minWidth: 0 }}>
+            <Title order={4} lh={1.1}>
+              Analyze
+            </Title>
+            <Text size="sm" c="dimmed" lineClamp={1}>
+              Upload songs, run analysis, and generate your leadsheets.
+            </Text>
+          </div>
+          {isAllDoneOrFailed && <Button
+            variant="filled"
+            size="xs"
+            leftSection={<IconPlus size={16} />}
+            onClick={handleNewSessionClick}
+          >
+            New Session
+          </Button>}
+        </Group>
+      </Paper>
       <FileUpload enabled={allSongsPending || false} allDone={!allSongsPending} />
       {currentJobSongs.length > 0 && !isAllDoneOrFailed && (
         <GenerateSheetButton
