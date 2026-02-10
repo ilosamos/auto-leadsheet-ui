@@ -66,9 +66,6 @@ export function Header() {
 
               <Menu.Dropdown>
                 <Menu.Label>{userEmail}</Menu.Label>
-                <Menu.Item leftSection={<IconUser size={14} />}>
-                  Profile
-                </Menu.Item>
                 <Menu.Divider />
                 <Menu.Item
                   color="red"

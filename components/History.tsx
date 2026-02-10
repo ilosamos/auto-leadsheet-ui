@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button, Center, Group, Loader, Paper, ScrollArea, Stack, Text, Title } from "@mantine/core";
+import { Button, Group, Paper, ScrollArea, Stack, Text, Title } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import type { SongResponse } from "../app/client";
 import { UsersService } from "../app/client";
@@ -14,7 +14,7 @@ type HistoryProps = {
   pageSize?: number;
 };
 
-export function History({ active, pageSize = 6 }: HistoryProps) {
+export function History({ active, pageSize = 5 }: HistoryProps) {
   const { user } = useUser();
 
   const [songs, setSongs] = useState<SongResponse[]>([]);
@@ -127,7 +127,7 @@ export function History({ active, pageSize = 6 }: HistoryProps) {
 
   return (
     // Fixed-height panel: header stays anchored, list scrolls inside.
-    <Stack gap="md" pb="xs" style={{ height: "64vh" }}>
+    <Stack gap="md" pb="xs" style={{ height: "57vh" }}>
       <Paper withBorder radius="md" p="sm" shadow="xs" maw="648" bg="gray.9">
         <Group justify="space-between" align="center" wrap="nowrap">
           <div style={{ minWidth: 0 }}>

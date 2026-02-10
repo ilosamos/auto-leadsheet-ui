@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f4f5f7"/>
+    </linearGradient>
+    <style>
+      .title { font: 700 44px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif; fill: #111827; }
+      .subtitle { font: 500 20px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif; fill: #374151; }
+      .meta { font: 500 16px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif; fill: #6B7280; }
+      .chord { font: 700 18px ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; fill: #111827; }
+      .note { fill: #111827; }
+      .thin { stroke: #111827; stroke-width: 2; }
+      .staff { stroke: #111827; stroke-width: 1.5; opacity: 0.9; }
+      .bar { stroke: #111827; stroke-width: 2.5; opacity: 0.9; }
+      .box { fill: none; stroke: #E5E7EB; stroke-width: 2; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="1200" rx="28" fill="url(#paper)"/>
+  <rect x="56" y="56" width="788" height="1088" rx="18" class="box"/>
+
+  <text x="96" y="132" class="title">Autumn Walk (Example)</text>
+  <text x="96" y="170" class="subtitle">Lead sheet preview  chords + melody</text>
+  <text x="96" y="212" class="meta">Key: F " Tempo: 120 " Time: 4/4</text>
+
+  <!-- System 1 -->
+  <g transform="translate(96,260)">
+    <!-- Chords -->
+    <text x="0" y="0" class="chord">Fmaj7</text>
+    <text x="180" y="0" class="chord">Gm7</text>
+    <text x="360" y="0" class="chord">Am7</text>
+    <text x="540" y="0" class="chord">Bbmaj7</text>
+
+    <!-- Staff lines -->
+    <g transform="translate(0,30)">
+      <line x1="0" y1="0" x2="708" y2="0" class="staff"/>
+      <line x1="0" y1="16" x2="708" y2="16" class="staff"/>
+      <line x1="0" y1="32" x2="708" y2="32" class="staff"/>
+      <line x1="0" y1="48" x2="708" y2="48" class="staff"/>
+      <line x1="0" y1="64" x2="708" y2="64" class="staff"/>
+
+      <!-- Bar lines -->
+      <line x1="0" y1="-2" x2="0" y2="66" class="bar"/>
+      <line x1="177" y1="-2" x2="177" y2="66" class="bar"/>
+      <line x1="354" y1="-2" x2="354" y2="66" class="bar"/>
+      <line x1="531" y1="-2" x2="531" y2="66" class="bar"/>
+      <line x1="708" y1="-2" x2="708" y2="66" class="bar"/>
+
+      <!-- Melody (stylized notes) -->
+      <g>
+        <ellipse cx="44" cy="44" rx="10" ry="7" class="note"/>
+        <line x1="52" y1="44" x2="52" y2="18" class="thin"/>
+
+        <ellipse cx="110" cy="36" rx="10" ry="7" class="note"/>
+        <line x1="118" y1="36" x2="118" y2="10" class="thin"/>
+
+        <ellipse cx="240" cy="28" rx="10" ry="7" class="note"/>
+        <line x1="248" y1="28" x2="248" y2="4" class="thin"/>
+
+        <ellipse cx="300" cy="36" rx="10" ry="7" class="note"/>
+        <line x1="308" y1="36" x2="308" y2="10" class="thin"/>
+
+        <ellipse cx="420" cy="44" rx="10" ry="7" class="note"/>
+        <line x1="428" y1="44" x2="428" y2="18" class="thin"/>
+
+        <ellipse cx="486" cy="52" rx="10" ry="7" class="note"/>
+        <line x1="494" y1="52" x2="494" y2="26" class="thin"/>
+
+        <ellipse cx="600" cy="44" rx="10" ry="7" class="note"/>
+        <line x1="608" y1="44" x2="608" y2="18" class="thin"/>
+
+        <ellipse cx="664" cy="36" rx="10" ry="7" class="note"/>
+        <line x1="672" y1="36" x2="672" y2="10" class="thin"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- System 2 -->
+  <g transform="translate(96,430)">
+    <text x="0" y="0" class="chord">Gm7</text>
+    <text x="180" y="0" class="chord">C7</text>
+    <text x="360" y="0" class="chord">Fmaj7</text>
+    <text x="540" y="0" class="chord">Dm7</text>
+
+    <g transform="translate(0,30)">
+      <line x1="0" y1="0" x2="708" y2="0" class="staff"/>
+      <line x1="0" y1="16" x2="708" y2="16" class="staff"/>
+      <line x1="0" y1="32" x2="708" y2="32" class="staff"/>
+      <line x1="0" y1="48" x2="708" y2="48" class="staff"/>
+      <line x1="0" y1="64" x2="708" y2="64" class="staff"/>
+
+      <line x1="0" y1="-2" x2="0" y2="66" class="bar"/>
+      <line x1="177" y1="-2" x2="177" y2="66" class="bar"/>
+      <line x1="354" y1="-2" x2="354" y2="66" class="bar"/>
+      <line x1="531" y1="-2" x2="531" y2="66" class="bar"/>
+      <line x1="708" y1="-2" x2="708" y2="66" class="bar"/>
+
+      <g>
+        <ellipse cx="46" cy="52" rx="10" ry="7" class="note"/>
+        <line x1="54" y1="52" x2="54" y2="26" class="thin"/>
+
+        <ellipse cx="128" cy="44" rx="10" ry="7" class="note"/>
+        <line x1="136" y1="44" x2="136" y2="18" class="thin"/>
+
+        <ellipse cx="220" cy="36" rx="10" ry="7" class="note"/>
+        <line x1="228" y1="36" x2="228" y2="10" class="thin"/>
+
+        <ellipse cx="304" cy="28" rx="10" ry="7" class="note"/>
+        <line x1="312" y1="28" x2="312" y2="4" class="thin"/>
+
+        <ellipse cx="406" cy="36" rx="10" ry="7" class="note"/>
+        <line x1="414" y1="36" x2="414" y2="10" class="thin"/>
+
+        <ellipse cx="478" cy="44" rx="10" ry="7" class="note"/>
+        <line x1="486" y1="44" x2="486" y2="18" class="thin"/>
+
+        <ellipse cx="602" cy="52" rx="10" ry="7" class="note"/>
+        <line x1="610" y1="52" x2="610" y2="26" class="thin"/>
+
+        <ellipse cx="670" cy="44" rx="10" ry="7" class="note"/>
+        <line x1="678" y1="44" x2="678" y2="18" class="thin"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- Footer note -->
+  <text x="96" y="1112" class="meta">This is a UI preview image (replace with real generated examples).</text>
+</svg>
