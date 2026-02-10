@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button, Center, Group, Loader, Stack, Text, Title } from "@mantine/core";
+import { Button, Center, Group, Loader, Paper, ScrollArea, Stack, Text, Title } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import type { SongResponse } from "../app/client";
 import { UsersService } from "../app/client";
@@ -14,7 +14,7 @@ type HistoryProps = {
   pageSize?: number;
 };
 
-export function History({ active, pageSize = 25 }: HistoryProps) {
+export function History({ active, pageSize = 6 }: HistoryProps) {
   const { user } = useUser();
 
   const [songs, setSongs] = useState<SongResponse[]>([]);
@@ -25,6 +25,7 @@ export function History({ active, pageSize = 25 }: HistoryProps) {
 
   const lastUserIdRef = useRef<string | null>(null);
   const generationRef = useRef(0);
+  const hasAutoLoadedOnceRef = useRef(false);
 
   const hasMore = useMemo(() => {
     return typeof nextCursor === "string" && nextCursor.length > 0;
@@ -98,6 +99,7 @@ export function History({ active, pageSize = 25 }: HistoryProps) {
     if (lastUserIdRef.current !== userId) {
       lastUserIdRef.current = userId;
       generationRef.current += 1;
+      hasAutoLoadedOnceRef.current = false;
       setSongs([]);
       setNextCursor(undefined);
       setError(null);
@@ -112,6 +114,8 @@ export function History({ active, pageSize = 25 }: HistoryProps) {
     if (songs.length > 0) return;
     if (isLoadingInitial) return;
     if (error !== null) return;
+    if (hasAutoLoadedOnceRef.current) return;
+    hasAutoLoadedOnceRef.current = true;
     generationRef.current += 1;
     void refresh();
     // Intentionally depend on state so we don't miss the "became active while empty" case.
@@ -121,41 +125,34 @@ export function History({ active, pageSize = 25 }: HistoryProps) {
     return null;
   }
 
-  if (isLoadingInitial && error === null) {
-    return (
-      <Center py="xl">
-        <Stack align="center" gap="sm">
-          <Text size="sm" c="dimmed">
-            Loading your songs…
-          </Text>
-          <Loader size="md" />
-        </Stack>
-      </Center>
-    );
-  }
-
   return (
-    <Stack gap="sm" py="xs">
-      <Group justify="space-between" align="flex-end" wrap="nowrap">
-        <div style={{ minWidth: 0 }}>
-          <Title order={4}>History</Title>
-          <Text size="sm" c="dimmed">
-            Your previous analyses, newest first.
-          </Text>
-        </div>
-        <Button
-          variant="default"
-          size="xs"
-          leftSection={<IconRefresh size={16} />}
-          loading={isLoadingInitial}
-          onClick={() => {
-            generationRef.current += 1;
-            void refresh();
-          }}
-        >
-          Refresh
-        </Button>
-      </Group>
+    // Fixed-height panel: header stays anchored, list scrolls inside.
+    <Stack gap="sm" pb="xs" style={{ height: "64vh" }}>
+      <Paper withBorder radius="md" p="sm" shadow="xs" maw="648" bg="gray.9">
+        <Group justify="space-between" align="center" wrap="nowrap">
+          <div style={{ minWidth: 0 }}>
+            <Title order={4} lh={1.1}>
+              History
+            </Title>
+            <Text size="sm" c="dimmed" lineClamp={1}>
+              Your previous analyses, newest first.
+            </Text>
+          </div>
+          <Button
+            variant="light"
+            size="xs"
+            leftSection={<IconRefresh size={16} />}
+            loading={isLoadingInitial}
+            onClick={() => {
+              hasAutoLoadedOnceRef.current = true;
+              generationRef.current += 1;
+              void refresh();
+            }}
+          >
+            Refresh
+          </Button>
+        </Group>
+      </Paper>
 
       {error && (
         <Group justify="space-between" align="center">
@@ -168,25 +165,39 @@ export function History({ active, pageSize = 25 }: HistoryProps) {
         </Group>
       )}
 
-      {!error && songs.length === 0 ? (
-        <Text size="sm" c="dimmed">
-          No songs yet.
-        </Text>
-      ) : (
-        <Stack gap="sm">
-          {songs.map((s) => (
-            <ResultItem key={s.songId} song={s} />
-          ))}
-        </Stack>
-      )}
+      <ScrollArea
+        type="always"
+        offsetScrollbars
+        scrollbarSize={10}
+        style={{ flex: 1 }}
+      >
+        <Stack gap="sm" pr="sm" pb="xs">
+          {isLoadingInitial && error === null && songs.length === 0 ? (
+            <Center py="xl">
+              <Stack align="center" gap="sm">
+                <Text size="sm" c="dimmed">
+                  Loading your songs…
+                </Text>
+                <Loader size="md" />
+              </Stack>
+            </Center>
+          ) : !error && songs.length === 0 ? (
+            <Text size="sm" c="dimmed">
+              No songs yet.
+            </Text>
+          ) : (
+            songs.map((s) => <ResultItem key={s.songId} song={s} />)
+          )}
 
-      {hasMore && (
-        <Group justify="center" pt="xs">
-          <Button onClick={loadMore} loading={isLoadingMore} variant="light">
-            Load more
-          </Button>
-        </Group>
-      )}
+          {hasMore && (
+            <Group justify="center" pt="xs">
+              <Button onClick={loadMore} loading={isLoadingMore} variant="light">
+                Load more
+              </Button>
+            </Group>
+          )}
+        </Stack>
+      </ScrollArea>
     </Stack>
   );
 }
