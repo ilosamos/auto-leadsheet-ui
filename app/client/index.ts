@@ -8,6 +8,7 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { CancelJobResponse } from './models/CancelJobResponse';
+export type { CheckoutSessionResponse } from './models/CheckoutSessionResponse';
 export type { CreateSongRequest } from './models/CreateSongRequest';
 export type { CreateUserRequest } from './models/CreateUserRequest';
 export type { HealthResponse } from './models/HealthResponse';
@@ -30,4 +31,5 @@ export type { ValidationError } from './models/ValidationError';
 export { HealthService } from './services/HealthService';
 export { JobsService } from './services/JobsService';
 export { SongsService } from './services/SongsService';
+export { StripeService } from './services/StripeService';
 export { UsersService } from './services/UsersService';

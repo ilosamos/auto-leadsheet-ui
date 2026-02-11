@@ -17,15 +17,16 @@ import { UsersService } from "../app/client/services/UsersService";
  * /api/auth/session.  Each poll triggers the server-side `jwt` callback,
  * which refreshes the Google tokens when they are close to expiry.
  *
- * 4 minutes is well within the ~60 s pre-expiry window used in auth.ts.
+ * 3 minutes is well within the ~60 s pre-expiry window used in auth.ts.
  */
-const SESSION_REFETCH_INTERVAL_S = 4 * 60;
+const SESSION_REFETCH_INTERVAL_S = 3 * 60;
 
 type UserContextValue = {
   user: UserResponse | null;
   isLoading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
+  setFreeEligibleFalse: () => void;
 };
 
 const UserContext = createContext<UserContextValue | null>(null);
@@ -59,6 +60,12 @@ function UserProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, [status]);
 
+  const setFreeEligibleFalse = useCallback(() => {
+    setUser((current) =>
+      current ? { ...current, freeEligible: false } : current,
+    );
+  }, []);
+
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
@@ -68,6 +75,7 @@ function UserProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     error,
     refetch: fetchUser,
+    setFreeEligibleFalse,
   };
 
   return (

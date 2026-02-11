@@ -9,10 +9,13 @@ import { getSimulatedProgressFromSong } from "../utils/simulatedProgress";
 interface GenerateSheetButtonProps {
   songs: SongResponse[];
   onGenerate: () => void;
+  handlePurchase: (tier: "low" | "high") => void;
   loading?: boolean;
   /** Optional status text shown below the button while loading (e.g. "This can take a while…") */
   loadingText?: string;
   loadingStatus?: JobStatusEnum;
+  freeEligible: boolean;
+  remainingCredits: number;
 }
 
 function getDisabledReason(songs: SongResponse[]): string | null {
@@ -30,12 +33,19 @@ function getDisabledReason(songs: SongResponse[]): string | null {
 export function GenerateSheetButton({
   songs,
   onGenerate,
+  handlePurchase,
   loading = false,
   loadingStatus,
   loadingText,
+  freeEligible,
+  remainingCredits,
 }: GenerateSheetButtonProps) {
   const disabledReason = getDisabledReason(songs);
   const isDisabled = disabledReason !== null;
+  const isOutOfCredits = !freeEligible && remainingCredits <= 0;
+  const buttonLabel = freeEligible
+    ? `Generate Lead Sheet${songs.length > 1 ? "s" : ""}`
+    : "Generate Leadsheets for 1 Credit";
   const simulatedProgress = getSimulatedProgressFromSong(songs[0], 25, 90, 180);
 
   const percentForStatus = (status?: JobStatusEnum): number => {
@@ -72,14 +82,14 @@ export function GenerateSheetButton({
       radius="xl"
       fullWidth
       style={{ maxWidth: '400px' }}
-      disabled={isDisabled && !loading}
+      disabled={(isDisabled || isOutOfCredits) && !loading}
       loading={loading}
       onClick={onGenerate}
       leftSection={!loading ? <IconZoomScan size={24} /> : undefined}
       variant="filled"
       color="cyan"
     >
-      Analyze Songs
+      {buttonLabel}
     </Button>
   );
 
@@ -112,6 +122,29 @@ export function GenerateSheetButton({
   return (
     <Stack gap={0} align="center" style={{ width: '100%' }}>
       {wrappedButton}
+      {isOutOfCredits && (
+        <Stack gap="xs" align="center" mt="sm" style={{ width: '100%' }}>
+          <Button
+            size="sm"
+            radius="xl"
+            variant="outline"
+            style={{ maxWidth: '400px', width: '100%' }}
+            onClick={() => handlePurchase("low")}
+          >
+            Buy 5 Credits
+          </Button>
+          <Button
+            size="sm"
+            radius="xl"
+            color="yellow"
+            variant="outline"
+            style={{ maxWidth: '400px', width: '100%' }}
+            onClick={() => handlePurchase("high")}
+          >
+            Buy 10 Credits
+          </Button>
+        </Stack>
+      )}
       {loading && loadingStatus && semiCircleProgress}
       {loading && loadingText && (
         <Text size="xs" c="dimmed" mt="xs" ta="center">

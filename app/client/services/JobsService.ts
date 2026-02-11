@@ -74,14 +74,19 @@ export class JobsService {
      */
     public static triggerAllin1JobJobsJobIdRunAllin1Post({
         jobId,
+        free = false,
     }: {
         jobId: string,
+        free?: boolean,
     }): CancelablePromise<RunJobResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/jobs/{job_id}/run-allin1',
             path: {
                 'job_id': jobId,
+            },
+            query: {
+                'free': free,
             },
             errors: {
                 422: `Validation Error`,
@@ -96,14 +101,19 @@ export class JobsService {
      */
     public static triggerChordJobJobsJobIdRunChordPost({
         jobId,
+        free = false,
     }: {
         jobId: string,
+        free?: boolean,
     }): CancelablePromise<RunJobResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/jobs/{job_id}/run-chord',
             path: {
                 'job_id': jobId,
+            },
+            query: {
+                'free': free,
             },
             errors: {
                 422: `Validation Error`,

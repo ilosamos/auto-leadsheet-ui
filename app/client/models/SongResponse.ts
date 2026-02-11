@@ -17,6 +17,7 @@ export type SongResponse = {
     lastJobTriggered?: (string | null);
     title?: (string | null);
     artist?: (string | null);
+    owner?: (string | null);
     size?: (number | null);
     length?: (number | null);
     originalName?: (string | null);

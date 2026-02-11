@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "generate-client": "curl -s http://localhost:8000/openapi.json -o openapi.json && openapi --input openapi.json --output app/client --client fetch --useOptions --useUnionTypes && rm openapi.json"
+    "generate-client": "curl -s http://localhost:8080/openapi.json -o openapi.json && openapi --input openapi.json --output app/client --client fetch --useOptions --useUnionTypes && rm openapi.json"
   },
   "dependencies": {
     "@mantine/core": "8.3.14",
@@ -21,7 +21,8 @@
     "next": "15.5.3",
     "next-auth": "^5.0.0-beta.30",
     "react": "19.1.1",
-    "react-dom": "19.1.1"
+    "react-dom": "19.1.1",
+    "stripe": "^20.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

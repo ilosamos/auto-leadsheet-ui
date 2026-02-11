@@ -15,6 +15,7 @@ import { getSession } from "next-auth/react";
 import { SongResponse } from "../app/client";
 import { OpenAPI } from "../app/client/core/OpenAPI";
 import { useJob } from "../providers/JobProvider";
+import { notifications } from "@mantine/notifications";
 
 interface ResultItemProps {
   song: SongResponse;
@@ -71,8 +72,11 @@ export function ResultItem({ song }: ResultItemProps) {
       try {
         await downloadFile(url, filename);
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(`Failed to download ${type}:`, err);
+        notifications.show({
+          title: "Error",
+          message: "Failed to download file. File may be not convertible to MusicXML or PDF.",
+          color: "red",
+        });
       } finally {
         setDownloading(null);
       }

@@ -4,19 +4,25 @@ import { useRef, useEffect, useState } from "react";
 import { Button, Center, Group, Loader, Modal, Paper, Stack, Text, Title } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useJob } from "../providers/JobProvider";
+import { useUser } from "../providers/AuthSessionProvider";
 import { FileUpload } from "./FileUpload";
 import { ResultList } from "./ResultList";
 import { GenerateSheetButton } from "./GenerateSheetButton";
 import { showNotification } from "@mantine/notifications";
 import { JobStatusEnum } from "../app/client";
+import { StripeService } from "../app/client/services/StripeService";
+import { api } from "../app/client/api";
 
 const POLL_INTERVAL_MS = 5000;
 
 export function Analyze() {
   const { isLoadingJob, currentJobSongs, createJob, fetchSongs, triggerAnalysisJobs } = useJob();
+  const { user } = useUser();
   const pollerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [newSessionModalOpen, setNewSessionModalOpen] = useState(false);
   const isLoading = isLoadingJob;
+  const freeEligible = user?.freeEligible ?? true;
+  const remainingCredits = (user as { remainingCredits?: number } | null)?.remainingCredits ?? 0;
 
   const handleNewSessionClick = () => setNewSessionModalOpen(true);
   const handleNewSessionConfirm = () => {
@@ -65,6 +71,34 @@ export function Analyze() {
         color: "red",
       });
     }
+  };
+
+  const handlePurchase = async (tier: "low" | "high") => {
+    const { data, error } = await api(
+      StripeService.createCheckoutSessionStripeCheckoutPost({ tier }),
+    );
+
+    if (error) {
+      showNotification({
+        title: "Checkout error",
+        message: "Unable to start checkout. Please try again.",
+        color: "red",
+      });
+      return;
+    }
+
+    const redirectUrl = data?.url ?? null;
+
+    if (!redirectUrl) {
+      showNotification({
+        title: "Checkout error",
+        message: "Checkout URL was not returned. Please try again.",
+        color: "red",
+      });
+      return;
+    }
+
+    window.location.href = redirectUrl;
   };
 
   // Single poller: when any song is in progress, refresh songs every POLL_INTERVAL_MS.
@@ -146,6 +180,9 @@ export function Analyze() {
           loadingText="This may take a few minutes"
           loadingStatus={firstJobStatus() ?? "PENDING"}
           onGenerate={handleGenerate}
+          handlePurchase={handlePurchase}
+          freeEligible={freeEligible}
+          remainingCredits={remainingCredits}
         />
       )}
       <ResultList songs={finishedSongs} />

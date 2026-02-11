@@ -11,5 +11,7 @@ export type UserResponse = {
     name?: (string | null);
     image?: (string | null);
     createdAt?: (string | null);
+    freeEligible?: boolean;
+    credits?: number;
 };
 
