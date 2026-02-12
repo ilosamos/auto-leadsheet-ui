@@ -6,7 +6,7 @@ import {
   IconMicrophone2,
   IconSettings,
 } from "@tabler/icons-react";
-import { useCallback, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { Analyze } from "./Analyze";
 import { History } from "./History";
 import { PaymentHandler } from "./PaymentHandler";
@@ -25,7 +25,9 @@ export function AppTabs() {
 
   return (
     <>
-      <PaymentHandler />
+      <Suspense fallback={null}>
+        <PaymentHandler />
+      </Suspense>
       <Tabs
         value={tab}
         onChange={handleTabChange}
