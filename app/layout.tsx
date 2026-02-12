@@ -16,7 +16,7 @@ import { Footer } from "../components/Footer";
 import { GoogleOneTap } from "../components/GoogleOneTap";
 
 export const metadata = {
-  title: "Auto Leadsheet Generator",
+  title: "leadsheet.me - Auto Leadsheet Generator",
   description:
     "Upload your audio files and get lead sheets generated automatically.",
 };

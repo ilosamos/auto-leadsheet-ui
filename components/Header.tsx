@@ -26,7 +26,7 @@ export function Header() {
     <header>
       <Container size={740} py="sm">
         <Group justify="space-between">
-          <Text>Auto Leadsheet</Text>
+          <Text>leadsheet.me</Text>
 
           {status === "loading" && (
             <Skeleton height={28} width={100} radius="xl" />

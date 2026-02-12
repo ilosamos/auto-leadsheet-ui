@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { Anchor, Container, Group, Text } from "@mantine/core";
 
 const links = [
-  { label: "Privacy Policy", href: "#" },
-  { label: "Terms of Service", href: "#" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
   { label: "Imprint", href: "#" },
   { label: "Contact", href: "#" },
 ];
@@ -21,11 +22,14 @@ export function Footer() {
             {links.map((link) => (
               <Anchor
                 key={link.label}
+                component={Link}
                 href={link.href}
                 size="xs"
                 c="dimmed"
                 underline="hover"
-                onClick={(e) => e.preventDefault()}
+                onClick={
+                  link.href === "#" ? (e) => e.preventDefault() : undefined
+                }
               >
                 {link.label}
               </Anchor>
