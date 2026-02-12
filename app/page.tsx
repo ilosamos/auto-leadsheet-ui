@@ -7,10 +7,20 @@ import "./client/config";
 
 export default function HomePage() {
   return (
-    <Container size="full" p={0}>
+    <Container
+      size="full"
+      p={0}
+      style={{ height: "100%", display: "flex", flexDirection: "column" }}
+    >
       <HeroHeader />
-      <Container size={740} py="3rem">
-        <AppTabs />
+      <Container
+        size={740}
+        py="3rem"
+        style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}
+      >
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <AppTabs />
+        </div>
       </Container>
     </Container>
   );

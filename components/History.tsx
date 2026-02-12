@@ -126,7 +126,7 @@ export function History({ active, pageSize = 5 }: HistoryProps) {
 
   return (
     // Fixed-height panel: header stays anchored, list scrolls inside.
-    <Stack gap="md" pb="xs" style={{ height: "57vh" }}>
+    <Stack gap="md" pb="xs" style={{ height: "100%", minHeight: 0 }}>
       <Paper withBorder radius="md" p="sm" shadow="xs" maw="648" bg="gray.9">
         <Group justify="space-between" align="center" wrap="nowrap">
           <div style={{ minWidth: 0 }}>

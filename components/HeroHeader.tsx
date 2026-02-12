@@ -1,15 +1,18 @@
 import { Title, Text, Stack, Container, Box, Group, Alert } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { ExampleCard } from "./ExampleCard";
 import { IconInfoCircle } from "@tabler/icons-react";
 
 export function HeroHeader() {
+  const isSmallScreen = useMediaQuery("(max-width: 48em)");
+
   return (
     <Box
       component="section"
       style={{
         position: "relative",
         overflow: "hidden",
-        height: 400,
+          height: isSmallScreen ? 290 : 400,
       }}
     >
       {/* Background image layer (blurred) */}
@@ -47,12 +50,28 @@ export function HeroHeader() {
             <Text c="gray.2" size="lg" ta="left" maw={520}>
               Upload your songs and get lead sheets with chords, segments and more — exported as MusicXML and PDF.
             </Text>
-            <Alert variant="light" color="blue" p="xs" radius="md" icon={<IconInfoCircle size={18} />}>
-              Works best with simple structured songs of popular genres.
-            </Alert>
-            <Alert variant="light" color="yellow" p="xs" radius="md" icon={<IconInfoCircle size={18} />}>
-              Use sheets as drafts rather than final versions.
-            </Alert>
+            {!isSmallScreen && (
+              <>
+                <Alert
+                  variant="light"
+                  color="blue"
+                  p="xs"
+                  radius="md"
+                  icon={<IconInfoCircle size={18} />}
+                >
+                  Works best with simple structured songs of popular genres.
+                </Alert>
+                <Alert
+                  variant="light"
+                  color="yellow"
+                  p="xs"
+                  radius="md"
+                  icon={<IconInfoCircle size={18} />}
+                >
+                  Use sheets as drafts rather than final versions.
+                </Alert>
+              </>
+            )}
           </Stack>
           <ExampleCard 
             title="Frisch Kocht - Rastatronics"

@@ -6,8 +6,8 @@ import { Anchor, Container, Group, Text } from "@mantine/core";
 const links = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/terms" },
-  { label: "Imprint", href: "#" },
-  { label: "Contact", href: "#" },
+  { label: "Imprint", href: "/imprint" },
+  { label: "Contact", href: "mailto:office@leadsheet-app.com" },
 ];
 
 export function Footer() {

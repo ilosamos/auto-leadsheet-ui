@@ -10,6 +10,7 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { IconFileTypeXml, IconFileTypePdf } from "@tabler/icons-react";
 import { getSession } from "next-auth/react";
 import { SongResponse } from "../app/client";
@@ -53,6 +54,7 @@ async function downloadFile(url: string, filename: string) {
 export function ResultItem({ song }: ResultItemProps) {
   const { currentJob } = useJob();
   const [downloading, setDownloading] = useState<"pdf" | "xml" | null>(null);
+  const isSmallScreen = useMediaQuery("(max-width: 48em)");
   const jobId = song.jobId ?? currentJob?.jobId ?? null;
 
   const placeholderImageUrl = () => {
@@ -86,7 +88,12 @@ export function ResultItem({ song }: ResultItemProps) {
 
   return (
     <Paper withBorder p="sm" radius="md">
-      <Group gap="md" align="flex-start" wrap="nowrap">
+      <Group
+        gap="md"
+        align="flex-start"
+        wrap={isSmallScreen ? "wrap" : "nowrap"}
+        style={{ width: "100%", minWidth: 0 }}
+      >
         {/* Preview thumbnail */}
         <Box
           style={{
@@ -114,7 +121,7 @@ export function ResultItem({ song }: ResultItemProps) {
 
         {/* Title, artist, and audio player */}
         <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <Text size="sm" fw={600} lineClamp={1}>
               {song.title}
             </Text>
@@ -122,19 +129,17 @@ export function ResultItem({ song }: ResultItemProps) {
               {song.artist}
             </Text>
           </div>
-
-          {/* Native audio player */}
-          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-          <audio
-            controls
-            preload="none"
-            src={undefined}
-            style={{ width: "100%", height: 32 }}
-          />
         </Stack>
 
         {/* Download buttons */}
-        <Stack gap="xs" style={{ flexShrink: 0 }} justify="center">
+        <Stack
+          gap="xs"
+          style={{
+            flexShrink: 0,
+            width: isSmallScreen ? "100%" : "auto",
+          }}
+          justify="center"
+        >
           <Button
             variant="filled"
             size="xs"
@@ -142,6 +147,7 @@ export function ResultItem({ song }: ResultItemProps) {
             loading={downloading === "xml"}
             onClick={() => handleDownload("xml")}
             justify="flex-start"
+            fullWidth={isSmallScreen}
           >
             Download MusicXML
           </Button>
@@ -153,6 +159,7 @@ export function ResultItem({ song }: ResultItemProps) {
             loading={downloading === "pdf"}
             onClick={() => handleDownload("pdf")}
             justify="flex-start"
+            fullWidth={isSmallScreen}
           >
             Download PDF
           </Button>

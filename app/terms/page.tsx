@@ -1,8 +1,8 @@
 export default function TermsPage() {
   return (
     <main
+      className="standalone-page"
       style={{
-        minHeight: "100vh",
         maxWidth: 760,
         margin: "0 auto",
         padding: "3rem 1.5rem 4rem",
