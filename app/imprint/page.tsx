@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function ImprintPage() {
   return (
     <main
@@ -9,7 +11,7 @@ export default function ImprintPage() {
         lineHeight: 1.6,
       }}
     >
-      <a
+      <Link
         href="/"
         style={{
           display: "inline-block",
@@ -19,7 +21,7 @@ export default function ImprintPage() {
         }}
       >
         &larr; Go back
-      </a>
+      </Link>
       <h1>Imprint / Impressum</h1>
       <p>
         <strong>Website:</strong> leadsheet.me

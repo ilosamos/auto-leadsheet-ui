@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function PrivacyPage() {
   return (
     <main
@@ -9,7 +11,7 @@ export default function PrivacyPage() {
         lineHeight: 1.6,
       }}
     >
-      <a
+      <Link
         href="/"
         style={{
           display: "inline-block",
@@ -19,7 +21,7 @@ export default function PrivacyPage() {
         }}
       >
         &larr; Go back
-      </a>
+      </Link>
       <h1>Privacy Policy for leadsheet.me</h1>
       <p>
         <strong>Effective date:</strong> 2026-02-12

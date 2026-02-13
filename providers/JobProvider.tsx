@@ -133,13 +133,12 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
       return null;
     }
 
-    console.log('Set current job state to ', data);
     setCurrentJobState(data);
     setCurrentJobSongs([]);
     localStorage.setItem(CURRENT_JOB_KEY, data.jobId);
     setIsLoadingJob(false);
     return data;
-  }, []);
+  }, [currentJob]);
 
   const setCurrentJob = useCallback(
     async (jobId: string) => {

@@ -17,6 +17,12 @@ export default [
     },
   },
   {
+    files: ['app/client/**'],
+    linterOptions: {
+      reportUnusedDisableDirectives: 'off',
+    },
+  },
+  {
     ignores: ['.next/**', 'node_modules/**', '**/*.{js,mjs,cjs}', 'next-env.d.ts'],
   },
 ];
