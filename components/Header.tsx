@@ -13,6 +13,9 @@ import {
 import { IconBrandGoogle, IconLogout, IconUser } from "@tabler/icons-react";
 import { useSession, signOut, signIn } from "next-auth/react";
 import { useUser } from "../providers/AuthSessionProvider";
+import { showNotification } from "@mantine/notifications";
+import { api } from "../app/client/api";
+import { StripeService } from "../app/client/services/StripeService";
 
 export function Header() {
   const { data: session, status } = useSession();
@@ -21,6 +24,36 @@ export function Header() {
   const userEmail = user?.email ?? session?.user?.email;
   const userName = user?.name ?? session?.user?.name;
   const userImage = user?.image ?? session?.user?.image;
+  const isFreeEligible = user?.freeEligible ?? false;
+  const shouldShowCredits = !isFreeEligible;
+  const credits = user?.credits ?? 0;
+  const handlePurchase = async (tier: "low" | "high") => {
+    const { data, error } = await api(
+      StripeService.createCheckoutSessionStripeCheckoutPost({ tier }),
+    );
+
+    if (error) {
+      showNotification({
+        title: "Checkout error",
+        message: "Unable to start checkout. Please try again.",
+        color: "red",
+      });
+      return;
+    }
+
+    const redirectUrl = data?.url ?? null;
+
+    if (!redirectUrl) {
+      showNotification({
+        title: "Checkout error",
+        message: "Checkout URL was not returned. Please try again.",
+        color: "red",
+      });
+      return;
+    }
+
+    window.location.href = redirectUrl;
+  };
 
   return (
     <header>
@@ -48,6 +81,11 @@ export function Header() {
               <Menu.Target>
                 <UnstyledButton>
                   <Group gap="xs">
+                    {shouldShowCredits && (
+                      <Text size="sm" fw={500}>
+                        Credits: {credits}
+                      </Text>
+                    )}
                     <Avatar
                       size="sm"
                       radius="xl"
@@ -66,6 +104,13 @@ export function Header() {
 
               <Menu.Dropdown>
                 <Menu.Label>{userEmail}</Menu.Label>
+                <Menu.Divider />
+                <Menu.Item onClick={() => handlePurchase("low")}>
+                  Buy 5 Credits
+                </Menu.Item>
+                <Menu.Item onClick={() => handlePurchase("high")}>
+                  Buy 10 Credits
+                </Menu.Item>
                 <Menu.Divider />
                 <Menu.Item
                   color="red"

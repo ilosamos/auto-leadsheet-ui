@@ -22,7 +22,7 @@ export function Analyze() {
   const [newSessionModalOpen, setNewSessionModalOpen] = useState(false);
   const isLoading = isLoadingJob;
   const freeEligible = user?.freeEligible ?? true;
-  const remainingCredits = (user as { remainingCredits?: number } | null)?.remainingCredits ?? 0;
+  const remainingCredits = user?.credits ?? 0;
 
   const handleNewSessionClick = () => setNewSessionModalOpen(true);
   const handleNewSessionConfirm = () => {
