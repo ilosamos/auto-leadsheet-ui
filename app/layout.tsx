@@ -31,37 +31,6 @@ export default function RootLayout({ children }: { children: any }) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
         />
-        <style>{`
-          .app-shell {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-          }
-          .app-main {
-            flex: 1;
-            min-height: 0;
-            overflow: hidden;
-          }
-          @media (max-width: 48em) {
-            .app-shell {
-              min-height: 100vh;
-              height: auto;
-              overflow: visible;
-            }
-            .app-main {
-              overflow: visible;
-            }
-          }
-          .app-shell:has(.standalone-page) {
-            min-height: 100vh;
-            height: auto;
-            overflow: visible;
-          }
-          .app-shell:has(.standalone-page) .app-main {
-            overflow: visible;
-          }
-        `}</style>
       </head>
       <body style={{ margin: 0 }}>
         <MantineProvider theme={theme} defaultColorScheme="dark">
@@ -69,7 +38,7 @@ export default function RootLayout({ children }: { children: any }) {
           <AuthSessionProvider>
             <GoogleOneTap />
             <JobProvider>
-              <div className="app-shell">
+              <div>
                 <Header />
                 <main className="app-main">{children}</main>
                 <Footer />
