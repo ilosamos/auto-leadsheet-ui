@@ -7,14 +7,30 @@ import {
   IconMicrophone2,
   IconSettings,
 } from "@tabler/icons-react";
-import { Suspense, useCallback, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Analyze } from "./Analyze";
 import { History } from "./History";
 import { PaymentHandler } from "./PaymentHandler";
 
 export function AppTabs() {
+  const { status } = useSession();
   const [tab, setTab] = useState<string | null>("analyze");
   const isSmallScreen = useMediaQuery("(max-width: 48em)");
+  const showHistory = status === "authenticated";
+  const tabPanelProps = {
+    pl: isSmallScreen ? "sm" : "md",
+    pt: isSmallScreen ? "sm" : "0",
+    keepMounted: true,
+    miw: isSmallScreen ? "100%" : "648px",
+    style: { height: "100%", minHeight: 0, flex: 1, minWidth: 0 },
+  };
+
+  useEffect(() => {
+    if (!showHistory && tab === "history") {
+      setTab("analyze");
+    }
+  }, [showHistory, tab]);
 
   const handleTabChange = useCallback(
     (next: string | null) => {
@@ -48,9 +64,11 @@ export function AppTabs() {
           <Tabs.Tab value="analyze" leftSection={<IconMicrophone2 size={16} />}>
             Analyze
           </Tabs.Tab>
-          <Tabs.Tab value="history" leftSection={<IconHistory size={16} />}>
-            History
-          </Tabs.Tab>
+          {showHistory && (
+            <Tabs.Tab value="history" leftSection={<IconHistory size={16} />}>
+              History
+            </Tabs.Tab>
+          )}
           <Tabs.Tab value="settings" leftSection={<IconSettings size={16} />}>
             Settings
           </Tabs.Tab>
@@ -59,32 +77,26 @@ export function AppTabs() {
         <Tabs.Panel
           value="analyze"
           pl={isSmallScreen ? "0" : "md"}
-          pt={isSmallScreen ? "sm" : "0"}
-          keepMounted
-          style={{ height: "100%", minHeight: 0, flex: 1, minWidth: 0 }}
-          miw={isSmallScreen ? "100%" : "648px"}
+          pt={tabPanelProps.pt}
+          keepMounted={tabPanelProps.keepMounted}
+          style={tabPanelProps.style}
+          miw={tabPanelProps.miw}
         >
           <Analyze />
         </Tabs.Panel>
 
-        <Tabs.Panel
-          value="history"
-          pl={isSmallScreen ? "sm" : "md"}
-          pt={isSmallScreen ? "sm" : "0"}
-          keepMounted
-          miw={isSmallScreen ? "100%" : "648px"}
-          style={{ height: "100%", minHeight: 0, flex: 1, minWidth: 0 }}
-        >
-          <History active={tab === "history"} />
-        </Tabs.Panel>
+        {showHistory && (
+          <Tabs.Panel
+            value="history"
+            {...tabPanelProps}
+          >
+            <History active={tab === "history"} />
+          </Tabs.Panel>
+        )}
 
         <Tabs.Panel
           value="settings"
-          pl={isSmallScreen ? "sm" : "md"}
-          pt={isSmallScreen ? "sm" : "0"}
-          keepMounted
-          miw={isSmallScreen ? "100%" : "648px"}
-          style={{ height: "100%", minHeight: 0, flex: 1, minWidth: 0 }}
+          {...tabPanelProps}
         >
           <Text c="dimmed" size="sm">
             Settings coming soon.

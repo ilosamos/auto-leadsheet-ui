@@ -3,8 +3,10 @@
 import { useRef, useEffect, useState } from "react";
 import { Button, Center, Group, Loader, Modal, Paper, Stack, Text, Title } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
+import { signIn, useSession } from "next-auth/react";
 import { useJob } from "../providers/JobProvider";
 import { useUser } from "../providers/AuthSessionProvider";
+import { AuthRequiredModal } from "./AuthRequiredModal";
 import { FileUpload } from "./FileUpload";
 import { ResultList } from "./ResultList";
 import { GenerateSheetButton } from "./GenerateSheetButton";
@@ -18,9 +20,12 @@ const POLL_INTERVAL_MS = 5000;
 export function Analyze() {
   const { isLoadingJob, currentJobSongs, createJob, fetchSongs, triggerAnalysisJobs } = useJob();
   const { user } = useUser();
+  const { status } = useSession();
   const pollerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [newSessionModalOpen, setNewSessionModalOpen] = useState(false);
+  const [authRequiredModalOpen, setAuthRequiredModalOpen] = useState(false);
   const isLoading = isLoadingJob;
+  const isAuthenticated = status === "authenticated";
   const freeEligible = user?.freeEligible ?? true;
   const remainingCredits = user?.credits ?? 0;
 
@@ -30,15 +35,24 @@ export function Analyze() {
     setNewSessionModalOpen(false);
   };
   const handleNewSessionCancel = () => setNewSessionModalOpen(false);
+  const handleAuthRequiredOpen = () => setAuthRequiredModalOpen(true);
+  const handleAuthRequiredCancel = () => setAuthRequiredModalOpen(false);
+  const handleAuthRequiredSignIn = () => {
+    setAuthRequiredModalOpen(false);
+    signIn("google");
+  };
 
   const finishedSongs = currentJobSongs.filter(
     (s) => s.chordStatus === "SUCCESS" && s.allin1Status === "SUCCESS",
   );
 
-  const isAllDoneOrFailed = currentJobSongs.length > 0 && currentJobSongs.every(
-    (s) => s.chordStatus === "SUCCESS" || s.allin1Status === "SUCCESS"
-    || s.chordStatus === "FAILED" || s.allin1Status === "FAILED"
-  );
+  const isAllDoneOrFailed =
+    currentJobSongs.length > 0 &&
+    currentJobSongs.every(
+      (s) =>
+        (s.chordStatus === "SUCCESS" || s.chordStatus === "FAILED") &&
+        (s.allin1Status === "SUCCESS" || s.allin1Status === "FAILED"),
+    );
 
   const isNothingRunning = currentJobSongs.every(
     (s) => (s.chordStatus === "SUCCESS" && s.allin1Status === "SUCCESS") 
@@ -152,6 +166,11 @@ export function Analyze() {
           </Button>
         </Group>
       </Modal>
+      <AuthRequiredModal
+        opened={authRequiredModalOpen}
+        onCancel={handleAuthRequiredCancel}
+        onSignIn={handleAuthRequiredSignIn}
+      />
       <Paper withBorder radius="md" p="sm" shadow="xs" bg="gray.9">
         <Group justify="space-between" align="center" wrap="nowrap">
           <div style={{ minWidth: 0 }}>
@@ -172,7 +191,12 @@ export function Analyze() {
           </Button>}
         </Group>
       </Paper>
-      <FileUpload enabled={allSongsPending || false} allDone={!allSongsPending} />
+      <FileUpload
+        enabled={allSongsPending || false}
+        allDone={!allSongsPending}
+        isAuthenticated={isAuthenticated}
+        onRequireAuth={handleAuthRequiredOpen}
+      />
       {currentJobSongs.length > 0 && !isAllDoneOrFailed && (
         <GenerateSheetButton
           songs={currentJobSongs}

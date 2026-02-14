@@ -17,6 +17,7 @@ import { SongsService } from "../app/client/services/SongsService";
 import { api } from "../app/client/api";
 import type { UpdateSongRequest } from "../app/client/models/UpdateSongRequest";
 import { uploadToSignedUrl } from "../utils/uploadToSignedUrl";
+import { parseSongMetadata } from "../utils/parseSongMetadata";
 
 const ACCEPTED_MIME_TYPES = [
   "audio/mpeg",
@@ -27,25 +28,19 @@ const ACCEPTED_MIME_TYPES = [
   "audio/x-m4a",
 ];
 
-/** Map MIME type to the fileType the API expects. */
-function mimeToFileType(mime: string): string {
-  const map: Record<string, string> = {
-    "audio/mpeg": "mp3",
-    "audio/wav": "wav",
-    "audio/x-wav": "wav",
-    "audio/flac": "flac",
-    "audio/mp4": "m4a",
-    "audio/x-m4a": "m4a",
-  };
-  return map[mime] ?? "mp3";
-}
-
 interface FileUploadProps {
   enabled?: boolean;
-  allDone?: boolean
+  allDone?: boolean;
+  isAuthenticated?: boolean;
+  onRequireAuth?: () => void;
 }
 
-export function FileUpload({ enabled = true, allDone = false }: FileUploadProps) {
+export function FileUpload({
+  enabled = true,
+  allDone = false,
+  isAuthenticated = true,
+  onRequireAuth,
+}: FileUploadProps) {
   const openRef = useRef<(() => void) | null>(null);
   const [uploads, setUploads] = useState<Map<string, UploadProgress>>(
     () => new Map(),
@@ -53,6 +48,26 @@ export function FileUpload({ enabled = true, allDone = false }: FileUploadProps)
   const [isUploading, setIsUploading] = useState(false);
   const activeUploadsRef = useRef(0);
   const { currentJob, currentJobSongs, addSong, removeSong, updateSong, patchSongLocally, updateSongUploadStatus, createJob } = useJob();
+
+  const ensureJobId = useCallback(async (): Promise<string | null> => {
+    if (currentJob?.jobId) {
+      return currentJob.jobId;
+    }
+    if (!isAuthenticated) {
+      onRequireAuth?.();
+      return null;
+    }
+    const job = await createJob();
+    if (!job) {
+      notifications.show({
+        title: "Could not create session",
+        message: "Please try again or sign in again.",
+        color: "red",
+      });
+      return null;
+    }
+    return job.jobId;
+  }, [currentJob?.jobId, isAuthenticated, onRequireAuth, createJob]);
 
   const updateUpload = useCallback(
     (songId: string, patch: Partial<UploadProgress>) =>
@@ -82,18 +97,7 @@ export function FileUpload({ enabled = true, allDone = false }: FileUploadProps)
       }
 
       // 1. Create a song record via the provider (updates currentJobSongs)
-      const fileType = mimeToFileType(file.type);
-      const originalName = file.name;
-      const baseName = file.name.replace(/\.[^.]+$/, "");
-      const dashIndex = baseName.indexOf("-");
-      let title: string;
-      let artist: string | undefined;
-      if (dashIndex !== -1) {
-        title = baseName.slice(0, dashIndex).trim().slice(0, 50);
-        artist = baseName.slice(dashIndex + 1).trim().slice(0, 50) || undefined;
-      } else {
-        title = baseName.trim().slice(0, 50);
-      }
+      const { title, artist, originalName, fileType } = parseSongMetadata(file);
       const { song, error } = await addSong(
         { title, artist, originalName, fileType, size: file.size },
         jobId,
@@ -155,32 +159,41 @@ export function FileUpload({ enabled = true, allDone = false }: FileUploadProps)
     [currentJob, addSong, updateUpload, updateSongUploadStatus, finishOneUpload],
   );
 
-  const handleDrop = useCallback(
-    async (droppedFiles: FileWithPath[]) => {
-      let jobId = currentJob?.jobId;
-      if (!jobId) {
-        const job = await createJob();
-        if (!job) {
-          notifications.show({
-            title: "Could not create session",
-            message: "Please try again or sign in again.",
-            color: "red",
-          });
-          return;
-        }
-        jobId = job.jobId;
-      }
-
+  const beginUploads = useCallback(
+    (files: FileWithPath[], jobId: string) => {
       // Set uploading state immediately before starting uploads
-      activeUploadsRef.current += droppedFiles.length;
+      activeUploadsRef.current += files.length;
       setIsUploading(true);
 
       // Start real uploads in parallel (pass jobId so uploads work before state has updated)
-      droppedFiles.forEach((file) => {
+      files.forEach((file) => {
         uploadFile(file, jobId);
       });
     },
-    [currentJob, createJob, uploadFile],
+    [uploadFile],
+  );
+
+  const startUploads = useCallback(
+    async (files: FileWithPath[]) => {
+      if (files.length === 0) { return; }
+      const jobId = await ensureJobId();
+      if (!jobId) { return; }
+
+      beginUploads(files, jobId);
+    },
+    [beginUploads, ensureJobId],
+  );
+
+  const handleDrop = useCallback(
+    async (droppedFiles: FileWithPath[]) => {
+      if (!isAuthenticated) {
+        onRequireAuth?.();
+        return;
+      }
+
+      await startUploads(droppedFiles);
+    },
+    [isAuthenticated, onRequireAuth, startUploads],
   );
 
   const handleRemoveSong = useCallback(
