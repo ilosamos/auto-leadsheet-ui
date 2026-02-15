@@ -18,6 +18,7 @@ import { JobsService } from "../app/client/services/JobsService";
 import { SongsService } from "../app/client/services/SongsService";
 import { api } from "../app/client/api";
 import { ApiError } from "../app/client/core/ApiError";
+import { useUser } from "./AuthSessionProvider";
 
 const CURRENT_JOB_KEY = "auto-leadsheet:currentJobId";
 
@@ -56,6 +57,7 @@ const JobContext = createContext<JobContextValue | null>(null);
 
 export function JobProvider({ children }: { children: React.ReactNode }) {
   const { status } = useSession();
+  const { refetch: refetchUser } = useUser();
   const prevStatusRef = useRef(status);
 
   const [currentJob, setCurrentJobState] = useState<JobResponse | null>(null);
@@ -136,9 +138,10 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
     setCurrentJobState(data);
     setCurrentJobSongs([]);
     localStorage.setItem(CURRENT_JOB_KEY, data.jobId);
+    await refetchUser();
     setIsLoadingJob(false);
     return data;
-  }, [currentJob]);
+  }, [currentJob, refetchUser]);
 
   const setCurrentJob = useCallback(
     async (jobId: string) => {

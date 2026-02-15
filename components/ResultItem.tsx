@@ -88,7 +88,7 @@ export function ResultItem({ song }: ResultItemProps) {
   );
 
   return (
-    <Paper withBorder p="sm" radius="md">
+    <Paper withBorder p="sm" radius="md" bg="dark.6">
       <Group
         gap="md"
         align="flex-start"

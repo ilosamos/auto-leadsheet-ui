@@ -164,30 +164,23 @@ export function History({ active, pageSize = 5 }: HistoryProps) {
         </Group>
       )}
 
-      <ScrollArea
-        type="always"
-        offsetScrollbars
-        scrollbarSize={10}
-        style={{ flex: 1 }}
-      >
-        <Stack gap="sm" pr="sm" pb="xs">
-          {!error && !isLoadingInitial && songs.length === 0 ? (
-            <Text size="sm" c="dimmed">
-              No songs yet.
-            </Text>
-          ) : (
-            songs.map((s) => <ResultItem key={s.songId} song={s} />)
-          )}
+      <Stack gap="sm" pb="xs">
+        {!error && !isLoadingInitial && songs.length === 0 ? (
+          <Text size="sm" c="dimmed">
+            No songs yet.
+          </Text>
+        ) : (
+          songs.map((s) => <ResultItem key={s.songId} song={s} />)
+        )}
 
-          {hasMore && (
-            <Group justify="center" pt="xs">
-              <Button onClick={loadMore} loading={isLoadingMore} variant="light">
-                Load more
-              </Button>
-            </Group>
-          )}
-        </Stack>
-      </ScrollArea>
+        {hasMore && (
+          <Group justify="center" pt="xs">
+            <Button onClick={loadMore} loading={isLoadingMore} variant="light">
+              Load more
+            </Button>
+          </Group>
+        )}
+      </Stack>
     </Stack>
   );
 }

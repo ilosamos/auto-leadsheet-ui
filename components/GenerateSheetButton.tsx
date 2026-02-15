@@ -45,7 +45,7 @@ export function GenerateSheetButton({
   const disabledReason = getDisabledReason(songs);
   const isDisabled = disabledReason !== null;
   const isOutOfCredits = !freeEligible && remainingCredits <= 0;
-  const shouldShowPurchaseButtons = remainingCredits < 1;
+  const shouldShowPurchaseButtons = remainingCredits < 1 && !freeEligible;
   const buttonLabel = freeEligible
     ? `Generate Lead Sheet${songs.length > 1 ? "s" : ""}`
     : "Generate Leadsheets for 1 Credit";

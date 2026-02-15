@@ -24,7 +24,7 @@ export function Header() {
   const userEmail = user?.email ?? session?.user?.email;
   const userName = user?.name ?? session?.user?.name;
   const userImage = user?.image ?? session?.user?.image;
-  const isFreeEligible = user?.freeEligible ?? false;
+  const isFreeEligible = user?.freeEligible ?? true;
   const shouldShowCredits = !isFreeEligible;
   const credits = user?.credits ?? 0;
   const handlePurchase = async (tier: "low" | "high") => {
