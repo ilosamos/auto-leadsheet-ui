@@ -3,10 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Response after triggering a Cloud Run job.
+ * Response after triggering both Cloud Run jobs.
  */
-export type RunJobResponse = {
+export type RunJobsResponse = {
     jobId: string;
-    executionId: string;
+    allin1ExecutionId: string;
+    chordExecutionId: string;
 };
 

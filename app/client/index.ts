@@ -16,7 +16,7 @@ export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { JobResponse } from './models/JobResponse';
 export type { JobStatusEnum } from './models/JobStatusEnum';
 export type { JobStatusResponse } from './models/JobStatusResponse';
-export type { RunJobResponse } from './models/RunJobResponse';
+export type { RunJobsResponse } from './models/RunJobsResponse';
 export type { SongResponse } from './models/SongResponse';
 export type { SongsListByMemberResponse } from './models/SongsListByMemberResponse';
 export type { SongsListResponse } from './models/SongsListResponse';

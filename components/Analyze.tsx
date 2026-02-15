@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Button, Center, Group, Loader, Modal, Paper, Stack, Text, Title } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
 import { signIn, useSession } from "next-auth/react";
 import { useJob } from "../providers/JobProvider";
@@ -10,10 +11,11 @@ import { AuthRequiredModal } from "./AuthRequiredModal";
 import { FileUpload } from "./FileUpload";
 import { ResultList } from "./ResultList";
 import { GenerateSheetButton } from "./GenerateSheetButton";
-import { showNotification } from "@mantine/notifications";
 import { JobStatusEnum } from "../app/client";
 import { StripeService } from "../app/client/services/StripeService";
 import { api } from "../app/client/api";
+import { notifyError } from "../utils/notifications";
+import { usePolling } from "../hooks/usePolling";
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -21,69 +23,71 @@ export function Analyze() {
   const { isLoadingJob, currentJobSongs, createJob, fetchSongs, triggerAnalysisJobs } = useJob();
   const { user } = useUser();
   const { status } = useSession();
-  const pollerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [newSessionModalOpen, setNewSessionModalOpen] = useState(false);
-  const [authRequiredModalOpen, setAuthRequiredModalOpen] = useState(false);
+  const [newSessionModalOpen, newSessionModal] = useDisclosure(false);
+  const [authRequiredModalOpen, authRequiredModal] = useDisclosure(false);
   const isLoading = isLoadingJob;
   const isAuthenticated = status === "authenticated";
   const freeEligible = user?.freeEligible ?? true;
   const remainingCredits = user?.credits ?? 0;
 
-  const handleNewSessionClick = () => setNewSessionModalOpen(true);
+  const handleNewSessionClick = () => newSessionModal.open();
   const handleNewSessionConfirm = () => {
     createJob();
-    setNewSessionModalOpen(false);
+    newSessionModal.close();
   };
-  const handleNewSessionCancel = () => setNewSessionModalOpen(false);
-  const handleAuthRequiredOpen = () => setAuthRequiredModalOpen(true);
-  const handleAuthRequiredCancel = () => setAuthRequiredModalOpen(false);
+  const handleNewSessionCancel = () => newSessionModal.close();
+  const handleAuthRequiredOpen = () => authRequiredModal.open();
+  const handleAuthRequiredCancel = () => authRequiredModal.close();
   const handleAuthRequiredSignIn = () => {
-    setAuthRequiredModalOpen(false);
+    authRequiredModal.close();
     signIn("google");
   };
 
-  const finishedSongs = currentJobSongs.filter(
-    (s) => s.chordStatus === "SUCCESS" && s.allin1Status === "SUCCESS",
+  const finishedSongs = useMemo(
+    () => currentJobSongs.filter(
+      (s) => s.chordStatus === "SUCCESS" && s.allin1Status === "SUCCESS",
+    ),
+    [currentJobSongs],
   );
 
-  const isAllDoneOrFailed =
+  const isAllDoneOrFailed = useMemo(() => (
     currentJobSongs.length > 0 &&
     currentJobSongs.every(
       (s) =>
         (s.chordStatus === "SUCCESS" || s.chordStatus === "FAILED") &&
         (s.allin1Status === "SUCCESS" || s.allin1Status === "FAILED"),
-    );
+    )
+  ), [currentJobSongs]);
 
-  const isNothingRunning = currentJobSongs.every(
-    (s) => (s.chordStatus === "SUCCESS" && s.allin1Status === "SUCCESS") 
+  const isNothingRunning = useMemo(() => currentJobSongs.every(
+    (s) => (s.chordStatus === "SUCCESS" && s.allin1Status === "SUCCESS")
     || (s.chordStatus === "FAILED" && s.allin1Status === "FAILED")
     || (s.chordStatus === "CANCELLED" && s.allin1Status === "CANCELLED")
     || (s.chordStatus === "PENDING" && s.allin1Status === "PENDING"),
-  );
-  const allSongsPending = currentJobSongs.every(
+  ), [currentJobSongs]);
+  const allSongsPending = useMemo(() => currentJobSongs.every(
     (s) => s.chordStatus === "PENDING" && s.allin1Status === "PENDING",
-  );
+  ), [currentJobSongs]);
 
-  const firstJobStatus = (): JobStatusEnum | null => {
+  const firstJobStatus = useMemo((): JobStatusEnum | null => {
     if (currentJobSongs.length === 0) { return null; }
-    const song = currentJobSongs[0];
-    if (song.chordStatus === "PENDING" || song.allin1Status === "PENDING") { return "PENDING"; }
-    if (song.chordStatus === "TRIGGERED" || song.allin1Status === "TRIGGERED") { return "TRIGGERED"; }
-    if (song.chordStatus === "ANALYZING" || song.allin1Status === "ANALYZING") { return "ANALYZING"; }
-    if (song.chordStatus === "SUCCESS" || song.allin1Status === "SUCCESS") { return "SUCCESS"; }
-    if (song.chordStatus === "FAILED" || song.allin1Status === "FAILED") { return "FAILED"; }
-    if (song.chordStatus === "CANCELLED" || song.allin1Status === "CANCELLED") { return "CANCELLED"; }
-    return "PENDING";
-  }
+    const [song] = currentJobSongs;
+    const statusOrder: JobStatusEnum[] = [
+      "PENDING",
+      "TRIGGERED",
+      "ANALYZING",
+      "SUCCESS",
+      "FAILED",
+      "CANCELLED",
+    ];
+    const statuses = [song.chordStatus, song.allin1Status];
+    return statusOrder.find((status) => statuses.includes(status)) ?? "PENDING";
+  }, [currentJobSongs]);
 
   const handleGenerate = async () => {
     const error = await triggerAnalysisJobs();
     if (error) {
-      showNotification({
-        title: "Error",
-        message: "There was an error triggering the analysis jobs. Please try again.",
-        color: "red",
-      });
+      notifyError("Error", "There was an error triggering the analysis jobs. Please try again.");
     }
   };
 
@@ -93,45 +97,25 @@ export function Analyze() {
     );
 
     if (error) {
-      showNotification({
-        title: "Checkout error",
-        message: "Unable to start checkout. Please try again.",
-        color: "red",
-      });
+      notifyError("Checkout error", "Unable to start checkout. Please try again.");
       return;
     }
 
     const redirectUrl = data?.url ?? null;
 
     if (!redirectUrl) {
-      showNotification({
-        title: "Checkout error",
-        message: "Checkout URL was not returned. Please try again.",
-        color: "red",
-      });
+      notifyError("Checkout error", "Checkout URL was not returned. Please try again.");
       return;
     }
 
     window.location.href = redirectUrl;
   };
 
-  // Single poller: when any song is in progress, refresh songs every POLL_INTERVAL_MS.
-  // Cleanup ensures only one interval is ever active; re-running when allSongsRunning
-  // becomes true again starts a fresh poller.
-  useEffect(() => {
-    if (isNothingRunning) {
-      pollerRef.current = null;
-      return;
-    }
-    const id = setInterval(() => {
-      fetchSongs();
-    }, POLL_INTERVAL_MS);
-    pollerRef.current = id;
-    return () => {
-      clearInterval(id);
-      pollerRef.current = null;
-    };
-  }, [isNothingRunning, fetchSongs]);
+  usePolling({
+    enabled: !isNothingRunning,
+    intervalMs: POLL_INTERVAL_MS,
+    onTick: fetchSongs,
+  });
 
   if (isLoading) {
     return (
@@ -202,7 +186,7 @@ export function Analyze() {
           songs={currentJobSongs}
           loading={!isNothingRunning}
           loadingText="This may take a few minutes"
-          loadingStatus={firstJobStatus() ?? "PENDING"}
+          loadingStatus={firstJobStatus ?? "PENDING"}
           onGenerate={handleGenerate}
           handlePurchase={handlePurchase}
           freeEligible={freeEligible}

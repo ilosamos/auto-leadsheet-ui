@@ -5,7 +5,7 @@
 import type { CancelJobResponse } from '../models/CancelJobResponse';
 import type { JobResponse } from '../models/JobResponse';
 import type { JobStatusResponse } from '../models/JobStatusResponse';
-import type { RunJobResponse } from '../models/RunJobResponse';
+import type { RunJobsResponse } from '../models/RunJobsResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -67,53 +67,21 @@ export class JobsService {
         });
     }
     /**
-     * Trigger Allin1 Job
-     * Trigger the allin1 analysis Cloud Run job. Returns immediately without waiting.
-     * @returns RunJobResponse Successful Response
+     * Trigger All Jobs
+     * Trigger both allin1 and chord analysis Cloud Run jobs.
+     * @returns RunJobsResponse Successful Response
      * @throws ApiError
      */
-    public static triggerAllin1JobJobsJobIdRunAllin1Post({
+    public static triggerAllJobsJobsJobIdRunPost({
         jobId,
-        free = false,
     }: {
         jobId: string,
-        free?: boolean,
-    }): CancelablePromise<RunJobResponse> {
+    }): CancelablePromise<RunJobsResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/jobs/{job_id}/run-allin1',
+            url: '/jobs/{job_id}/run',
             path: {
                 'job_id': jobId,
-            },
-            query: {
-                'free': free,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-    /**
-     * Trigger Chord Job
-     * Trigger the chord analysis Cloud Run job. Returns immediately without waiting.
-     * @returns RunJobResponse Successful Response
-     * @throws ApiError
-     */
-    public static triggerChordJobJobsJobIdRunChordPost({
-        jobId,
-        free = false,
-    }: {
-        jobId: string,
-        free?: boolean,
-    }): CancelablePromise<RunJobResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/jobs/{job_id}/run-chord',
-            path: {
-                'job_id': jobId,
-            },
-            query: {
-                'free': free,
             },
             errors: {
                 422: `Validation Error`,

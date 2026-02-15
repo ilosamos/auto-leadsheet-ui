@@ -13,9 +13,9 @@ import {
 import { IconBrandGoogle, IconLogout, IconUser } from "@tabler/icons-react";
 import { useSession, signOut, signIn } from "next-auth/react";
 import { useUser } from "../providers/AuthSessionProvider";
-import { showNotification } from "@mantine/notifications";
 import { api } from "../app/client/api";
 import { StripeService } from "../app/client/services/StripeService";
+import { notifyError } from "../utils/notifications";
 
 export function Header() {
   const { data: session, status } = useSession();
@@ -33,22 +33,14 @@ export function Header() {
     );
 
     if (error) {
-      showNotification({
-        title: "Checkout error",
-        message: "Unable to start checkout. Please try again.",
-        color: "red",
-      });
+      notifyError("Checkout error", "Unable to start checkout. Please try again.");
       return;
     }
 
     const redirectUrl = data?.url ?? null;
 
     if (!redirectUrl) {
-      showNotification({
-        title: "Checkout error",
-        message: "Checkout URL was not returned. Please try again.",
-        color: "red",
-      });
+      notifyError("Checkout error", "Checkout URL was not returned. Please try again.");
       return;
     }
 

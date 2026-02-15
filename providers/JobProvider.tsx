@@ -289,25 +289,15 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
       })),
     );
 
-    // 2. Trigger both requests in parallel
-    const [allin1Result, chordResult] = await Promise.all([
-      api(
-        JobsService.triggerAllin1JobJobsJobIdRunAllin1Post({
-          jobId: currentJob.jobId,
-        }),
-      ),
-      api(
-        JobsService.triggerChordJobJobsJobIdRunChordPost({
-          jobId: currentJob.jobId,
-        }),
-      ),
-    ]);
+    // 2. Trigger merged endpoint
+    const { error } = await api(
+      JobsService.triggerAllJobsJobsJobIdRunPost({
+        jobId: currentJob.jobId,
+      }),
+    );
 
-    const allin1Error = allin1Result.error;
-    const chordError = chordResult.error;
-
-    if (allin1Error || chordError) {
-      // 3. On any failure: cancel both job executions, revert statuses, throw
+    if (error) {
+      // 3. On failure: cancel executions, revert statuses, return error
       await api(
         JobsService.cancelJobExecutionsJobsJobIdCancelPost({
           jobId: currentJob.jobId,
@@ -322,8 +312,7 @@ export function JobProvider({ children }: { children: React.ReactNode }) {
         })),
       );
 
-      const err = allin1Error ?? chordError ?? null;
-      return err;
+      return error;
     }
 
     return null;
