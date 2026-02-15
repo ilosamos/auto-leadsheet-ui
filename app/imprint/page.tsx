@@ -1,4 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Imprint",
+  description:
+    "Operator, contact, and legal disclosure details for leadsheet.me.",
+  alternates: {
+    canonical: "/imprint",
+  },
+};
 
 export default function ImprintPage() {
   return (
@@ -23,6 +33,9 @@ export default function ImprintPage() {
         &larr; Go back
       </Link>
       <h1>Imprint / Impressum</h1>
+      <p>
+        Legal disclosure and contact details for the operator of leadsheet.me.
+      </p>
       <p>
         <strong>Website:</strong> leadsheet.me
         <br />

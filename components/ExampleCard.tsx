@@ -1,4 +1,5 @@
-import { Card, Image, Group, Text, Badge, Box, Button } from "@mantine/core";
+import Image from "next/image";
+import { Card, Group, Text, Badge, Box, Button } from "@mantine/core";
 import { IconFileTypePdf } from "@tabler/icons-react";
 
 interface ExampleCardProps {
@@ -27,13 +28,13 @@ export function ExampleCard({ title, description, image, downloadUrl }: ExampleC
       </Badge>
 
       <Card shadow="sm" padding="lg" radius="md" withBorder w={245}>
-        <Card.Section style={{ position: "relative" }}>
+        <Card.Section style={{ position: "relative", height: 160 }}>
           <Image
             src={image}
-            height={160}
             alt={title}
-            fit="cover"
-            style={{ objectPosition: "top" }}
+            fill
+            sizes="245px"
+            style={{ objectFit: "cover", objectPosition: "top" }}
           />
         </Card.Section>
 

@@ -1,4 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "How leadsheet.me collects, uses, and protects personal data for accounts, uploads, and payments.",
+  alternates: {
+    canonical: "/privacy",
+  },
+};
 
 export default function PrivacyPage() {
   return (
@@ -23,6 +33,10 @@ export default function PrivacyPage() {
         &larr; Go back
       </Link>
       <h1>Privacy Policy for leadsheet.me</h1>
+      <p>
+        This page explains what personal data we collect, why we collect it, and
+        how you can exercise your privacy rights.
+      </p>
       <p>
         <strong>Effective date:</strong> 2026-02-12
         <br />

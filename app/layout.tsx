@@ -2,6 +2,7 @@ import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 import "@mantine/notifications/styles.css";
 import React from "react";
+import type { Metadata } from "next";
 import {
   MantineProvider,
   ColorSchemeScript,
@@ -15,10 +16,35 @@ import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { GoogleOneTap } from "../components/GoogleOneTap";
 
-export const metadata = {
-  title: "leadsheet.me - Auto Leadsheet Generator",
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://leadsheet.me";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "leadsheet.me - Auto Leadsheet Generator",
+    template: "%s | leadsheet.me",
+  },
   description:
     "Upload your audio files and get lead sheets generated automatically.",
+  openGraph: {
+    title: "leadsheet.me - Auto Leadsheet Generator",
+    description:
+      "Upload your audio files and get lead sheets generated automatically.",
+    url: siteUrl,
+    siteName: "leadsheet.me",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "leadsheet.me - Auto Leadsheet Generator",
+    description:
+      "Upload your audio files and get lead sheets generated automatically.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }: { children: any }) {

@@ -1,4 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Use",
+  description:
+    "Terms for using leadsheet.me, including eligibility, uploads, credits, and limitations.",
+  alternates: {
+    canonical: "/terms",
+  },
+};
 
 export default function TermsPage() {
   return (
@@ -23,6 +33,10 @@ export default function TermsPage() {
         &larr; Go back
       </Link>
       <h1>Terms of Use for leadsheet.me</h1>
+      <p>
+        These terms describe how the service works, what you can upload, and the
+        limits of responsibility for generated outputs.
+      </p>
       <p>
         <strong>Effective date:</strong> 2026-02-12
         <br />
