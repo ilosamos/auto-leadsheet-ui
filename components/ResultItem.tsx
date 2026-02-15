@@ -17,6 +17,7 @@ import { SongResponse } from "../app/client";
 import { OpenAPI } from "../app/client/core/OpenAPI";
 import { useJob } from "../providers/JobProvider";
 import { notifications } from "@mantine/notifications";
+import { SMALL_SCREEN_QUERY } from "../utils/breakpoints";
 
 interface ResultItemProps {
   song: SongResponse;
@@ -54,7 +55,7 @@ async function downloadFile(url: string, filename: string) {
 export function ResultItem({ song }: ResultItemProps) {
   const { currentJob } = useJob();
   const [downloading, setDownloading] = useState<"pdf" | "xml" | null>(null);
-  const isSmallScreen = useMediaQuery("(max-width: 48em)");
+  const isSmallScreen = useMediaQuery(SMALL_SCREEN_QUERY);
   const jobId = song.jobId ?? currentJob?.jobId ?? null;
 
   const placeholderImageUrl = () => {

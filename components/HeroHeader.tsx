@@ -2,9 +2,10 @@ import { Title, Text, Stack, Container, Box, Group, Alert } from "@mantine/core"
 import { useMediaQuery } from "@mantine/hooks";
 import { ExampleCard } from "./ExampleCard";
 import { IconInfoCircle } from "@tabler/icons-react";
+import { SMALL_SCREEN_QUERY } from "../utils/breakpoints";
 
 export function HeroHeader() {
-  const isSmallScreen = useMediaQuery("(max-width: 48em)");
+  const isSmallScreen = useMediaQuery(SMALL_SCREEN_QUERY);
 
   return (
     <Box

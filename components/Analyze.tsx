@@ -185,7 +185,7 @@ export function Analyze() {
         <GenerateSheetButton
           songs={currentJobSongs}
           loading={!isNothingRunning}
-          loadingText="This may take a few minutes"
+          loadingText="This may take a few minutes. You can wait or come back later."
           loadingStatus={firstJobStatus ?? "PENDING"}
           onGenerate={handleGenerate}
           handlePurchase={handlePurchase}

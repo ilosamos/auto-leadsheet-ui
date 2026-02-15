@@ -1,6 +1,7 @@
 "use client";
 
-import { Button, SemiCircleProgress, Stack, Text, Tooltip } from "@mantine/core";
+import { Button, Group, Modal, SemiCircleProgress, Stack, Text, Tooltip } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { IconZoomScan } from "@tabler/icons-react";
 import type { SongResponse } from "../app/client/models/SongResponse";
 import { JobStatusEnum } from "../app/client";
@@ -40,6 +41,7 @@ export function GenerateSheetButton({
   freeEligible,
   remainingCredits,
 }: GenerateSheetButtonProps) {
+  const [confirmOpen, confirmModal] = useDisclosure(false);
   const disabledReason = getDisabledReason(songs);
   const isDisabled = disabledReason !== null;
   const isOutOfCredits = !freeEligible && remainingCredits <= 0;
@@ -85,7 +87,13 @@ export function GenerateSheetButton({
       style={{ maxWidth: '400px' }}
       disabled={(isDisabled || isOutOfCredits) && !loading}
       loading={loading}
-      onClick={onGenerate}
+      onClick={() => {
+        if (!freeEligible) {
+          confirmModal.open();
+          return;
+        }
+        onGenerate();
+      }}
       leftSection={!loading ? <IconZoomScan size={24} /> : undefined}
       variant="filled"
       color="cyan"
@@ -122,6 +130,30 @@ export function GenerateSheetButton({
 
   return (
     <Stack gap={0} align="center" style={{ width: '100%' }}>
+      <Modal
+        opened={confirmOpen}
+        onClose={confirmModal.close}
+        title="Confirm Action"
+        centered
+      >
+        <Text size="sm" c="dimmed" mb="md">
+          This action will use up 1 credit. Note that analysis may take a few minutes. Continue?
+        </Text>
+        <Group justify="flex-end" gap="xs">
+          <Button variant="default" onClick={confirmModal.close}>
+            Cancel
+          </Button>
+          <Button
+            variant="filled"
+            onClick={() => {
+              confirmModal.close();
+              onGenerate();
+            }}
+          >
+            Confirm
+          </Button>
+        </Group>
+      </Modal>
       {wrappedButton}
       {shouldShowPurchaseButtons && (
         <Stack gap="xs" align="center" mt="sm" style={{ width: '100%' }}>
@@ -148,7 +180,7 @@ export function GenerateSheetButton({
       )}
       {loading && loadingStatus && semiCircleProgress}
       {loading && loadingText && (
-        <Text size="xs" c="dimmed" mt="xs" ta="center">
+        <Text size="xs" c="dimmed" mt="xs" ta="center" maw={250}>
           {loadingText}
         </Text>
       )}
