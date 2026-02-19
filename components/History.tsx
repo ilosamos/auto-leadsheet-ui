@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button, Group, Paper, ScrollArea, Stack, Text, Title } from "@mantine/core";
+import { Button, Group, Paper, Stack, Text, Title } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import { UsersService, type SongResponse } from "../app/client";
 import { api } from "../app/client/api";
