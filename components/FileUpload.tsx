@@ -285,7 +285,7 @@ export function FileUpload({
           }}
           accept={ACCEPTED_MIME_TYPES}
           maxSize={100 * 1024 * 1024}
-          radius="md"
+          radius="lg"
           disabled={isUploading || !enabled}
           aria-label="Drop audio files here"
         >
@@ -372,7 +372,7 @@ export function FileUpload({
           <Alert
             variant="light"
             color="yellow"
-            radius="md"
+            radius="lg"
             icon={<IconInfoCircle size={18} />}
             mt="md"
           >

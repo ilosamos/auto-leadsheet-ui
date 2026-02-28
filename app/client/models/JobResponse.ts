@@ -13,5 +13,7 @@ export type JobResponse = {
     status: JobStatusEnum;
     allin1Execution?: (string | null);
     chordExecution?: (string | null);
+    songformerExecution?: (string | null);
+    beatThisExecution?: (string | null);
 };
 

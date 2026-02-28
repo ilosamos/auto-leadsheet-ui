@@ -19,7 +19,7 @@ export function SectionHeaderCard({
   return (
     <Paper
       withBorder
-      radius="md"
+      radius="lg"
       p="sm"
       shadow="xs"
       maw={maxWidth}

@@ -13,5 +13,6 @@ export type UserResponse = {
     createdAt?: (string | null);
     freeEligible?: boolean;
     credits?: number;
+    isBlocked?: boolean;
 };
 

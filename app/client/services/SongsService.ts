@@ -242,9 +242,11 @@ export class SongsService {
     public static getSongMusicxmlJobsJobIdSongsSongIdSheetMusicxmlGet({
         jobId,
         songId,
+        tabs = false,
     }: {
         jobId: string,
         songId: string,
+        tabs?: boolean,
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -252,6 +254,9 @@ export class SongsService {
             path: {
                 'job_id': jobId,
                 'song_id': songId,
+            },
+            query: {
+                'tabs': tabs,
             },
             errors: {
                 422: `Validation Error`,
@@ -270,9 +275,11 @@ export class SongsService {
     public static getSongPdfJobsJobIdSongsSongIdSheetPdfGet({
         jobId,
         songId,
+        tabs = false,
     }: {
         jobId: string,
         songId: string,
+        tabs?: boolean,
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -280,6 +287,9 @@ export class SongsService {
             path: {
                 'job_id': jobId,
                 'song_id': songId,
+            },
+            query: {
+                'tabs': tabs,
             },
             errors: {
                 422: `Validation Error`,

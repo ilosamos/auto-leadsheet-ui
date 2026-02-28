@@ -62,7 +62,8 @@ async function downloadFile(url: string, filename: string) {
 
 export function ResultItem({ song }: ResultItemProps) {
   const { currentJob } = useJob();
-  const [downloading, setDownloading] = useState<"pdf" | "xml" | null>(null);
+  const [isDownloadingXml, setIsDownloadingXml] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [includeGuitarTabs, setIncludeGuitarTabs] = useState(false);
   const isSmallScreen = useMediaQuery(SMALL_SCREEN_QUERY);
   const jobId = song.jobId ?? currentJob?.jobId ?? null;
@@ -82,12 +83,16 @@ export function ResultItem({ song }: ResultItemProps) {
       const filename = `${baseName}.${type === "pdf" ? "pdf" : "musicxml"}`;
       const params = new URLSearchParams();
       if (includeGuitarTabs) {
-        params.set("guitar_tabs", "true");
+        params.set("tabs", "true");
       }
       const query = params.toString();
       const url = `${OpenAPI.BASE}/jobs/${jobId}/songs/${song.songId}/${ext}${query ? `?${query}` : ""}`;
 
-      setDownloading(type);
+      if (type === "xml") {
+        setIsDownloadingXml(true);
+      } else {
+        setIsDownloadingPdf(true);
+      }
       try {
         await downloadFile(url, filename);
       } catch (err) {
@@ -97,7 +102,11 @@ export function ResultItem({ song }: ResultItemProps) {
           color: "red",
         });
       } finally {
-        setDownloading(null);
+        if (type === "xml") {
+          setIsDownloadingXml(false);
+        } else {
+          setIsDownloadingPdf(false);
+        }
       }
     },
     [includeGuitarTabs, jobId, song.songId, song.title],
@@ -107,7 +116,7 @@ export function ResultItem({ song }: ResultItemProps) {
     <Paper
       withBorder
       p="sm"
-      radius="md"
+      radius="lg"
       bg="dark.7"
       style={{
         borderColor: "var(--mantine-color-dark-5)",
@@ -196,7 +205,7 @@ export function ResultItem({ song }: ResultItemProps) {
             color="blue"
             size="xs"
             leftSection={<IconFileTypeXml size={16} />}
-            loading={downloading === "xml"}
+            loading={isDownloadingXml}
             onClick={() => handleDownload("xml")}
             justify="flex-start"
             fullWidth={isSmallScreen}
@@ -209,7 +218,7 @@ export function ResultItem({ song }: ResultItemProps) {
             color="gray"
             size="xs"
             leftSection={<IconFileTypePdf size={16} />}
-            loading={downloading === "pdf"}
+            loading={isDownloadingPdf}
             onClick={() => handleDownload("pdf")}
             justify="flex-start"
             fullWidth={isSmallScreen}

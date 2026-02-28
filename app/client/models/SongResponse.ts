@@ -13,6 +13,8 @@ export type SongResponse = {
     uploadStatus: UploadStatusEnum;
     chordStatus: JobStatusEnum;
     allin1Status: JobStatusEnum;
+    songformerStatus: JobStatusEnum;
+    beatThisStatus: JobStatusEnum;
     createdAt?: (string | null);
     lastJobTriggered?: (string | null);
     title?: (string | null);
@@ -21,6 +23,8 @@ export type SongResponse = {
     size?: (number | null);
     length?: (number | null);
     originalName?: (string | null);
+    songformerPath?: (string | null);
+    beatThisPath?: (string | null);
     preview?: (string | null);
 };
 

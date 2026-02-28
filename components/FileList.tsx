@@ -23,7 +23,7 @@ export function FileList({ songs, uploads, onRemove, onUpdate, isAccordionOpen }
   const uploadedCount = songs.filter((s) => s.uploadStatus === "SUCCESS").length;
 
   return (
-    <Accordion defaultValue="files" variant="contained" multiple={false} radius="md">
+    <Accordion defaultValue="files" variant="contained" multiple={false} radius="lg">
       <Accordion.Item value={isAccordionOpen ? "files" : "none"}>
         <Accordion.Control icon={<IconFiles size={20} />}>
           <Text size="sm" fw={500}>

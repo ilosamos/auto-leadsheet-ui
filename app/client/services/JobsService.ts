@@ -92,8 +92,9 @@ export class JobsService {
      * Cancel Job Executions
      * Cancel all running Cloud Run job executions for this job.
      *
-     * Uses execution IDs from allin1_execution and chord_execution. Executions that
-     * are already finished or not found are skipped. Resets allin1 and chord status
+     * Uses execution IDs from allin1_execution, chord_execution, songformer_execution,
+     * and beat_this_execution. Executions that are already finished or not found are
+     * skipped. Resets allin1, chord, songformer, and beat_this status
      * of all songs in the job to PENDING.
      * @returns CancelJobResponse Successful Response
      * @throws ApiError

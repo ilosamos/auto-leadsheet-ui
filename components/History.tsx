@@ -136,6 +136,7 @@ export function History({ active, pageSize = 5 }: HistoryProps) {
           <Button
             variant="light"
             size="xs"
+            radius="lg"
             leftSection={<IconRefresh size={16} />}
             loading={isLoadingInitial}
             onClick={() => {
@@ -171,7 +172,7 @@ export function History({ active, pageSize = 5 }: HistoryProps) {
 
         {hasMore && (
           <Group justify="center" pt="xs">
-            <Button onClick={loadMore} loading={isLoadingMore} variant="light">
+            <Button onClick={loadMore} loading={isLoadingMore} variant="light" radius="lg">
               Load more
             </Button>
           </Group>

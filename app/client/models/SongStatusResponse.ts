@@ -10,5 +10,7 @@ export type SongStatusResponse = {
     songId: string;
     chordStatus: JobStatusEnum;
     allin1Status: JobStatusEnum;
+    songformerStatus: JobStatusEnum;
+    beatThisStatus: JobStatusEnum;
 };
 

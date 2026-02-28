@@ -93,7 +93,7 @@ export function FileItem({ song, upload, onRemove, onUpdate }: FileItemProps) {
     <Paper
       withBorder
       p="sm"
-      radius="md"
+      radius="lg"
       bg="dark.7"
       style={{
         borderColor: "var(--mantine-color-dark-4)",
