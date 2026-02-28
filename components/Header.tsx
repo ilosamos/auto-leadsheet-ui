@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Avatar,
   Button,
@@ -58,7 +59,14 @@ export function Header() {
     >
       <Container size={740} py="sm">
         <Group justify="space-between">
-          <Text fw={700} style={{ letterSpacing: 0.2 }}>
+          <Text
+            component={Link}
+            href="/"
+            fw={700}
+            c="inherit"
+            td="none"
+            style={{ letterSpacing: 0.2, cursor: "pointer" }}
+          >
             leadsheet.me
           </Text>
 

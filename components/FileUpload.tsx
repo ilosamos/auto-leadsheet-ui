@@ -261,6 +261,28 @@ export function FileUpload({
         <Dropzone
           openRef={openRef}
           onDrop={handleDrop}
+          onReject={(fileRejections) => {
+            const details = fileRejections
+              .map(({ file, errors }) => {
+                const reasons = errors.map((error) => {
+                  if (error.code === "file-too-large") {
+                    return "file is larger than 100 MB";
+                  }
+                  if (error.code === "file-invalid-type") {
+                    return "unsupported file type";
+                  }
+                  return error.message;
+                });
+                return `${file.name}: ${reasons.join(", ")}`;
+              })
+              .join(" | ");
+
+            notifications.show({
+              title: "Some files could not be added",
+              message: details || "Unsupported file type or file too large (max 100 MB).",
+              color: "red",
+            });
+          }}
           accept={ACCEPTED_MIME_TYPES}
           maxSize={100 * 1024 * 1024}
           radius="md"

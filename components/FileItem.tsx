@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import {
   ActionIcon,
+  Badge,
   Group,
   Loader,
   Paper,
@@ -65,6 +66,14 @@ export function FileItem({ song, upload, onRemove, onUpdate }: FileItemProps) {
 
   const progressColor =
     status === "done" ? "teal" : status === "error" ? "red" : "blue";
+  const statusLabel =
+    status === "uploading"
+      ? "Uploading"
+      : status === "done" || (!upload && song.uploadStatus === "SUCCESS")
+        ? "Uploaded"
+        : status === "error" || isSongUploadStatusError
+          ? "Error"
+          : "Pending";
 
   const handleTitleSubmit = useCallback(
     (newTitle: string) => {
@@ -81,10 +90,28 @@ export function FileItem({ song, upload, onRemove, onUpdate }: FileItemProps) {
   );
 
   return (
-    <Paper withBorder p="sm" radius="md">
+    <Paper
+      withBorder
+      p="sm"
+      radius="md"
+      bg="dark.7"
+      style={{
+        borderColor: "var(--mantine-color-dark-4)",
+      }}
+    >
       <Group justify="space-between" mb={status === "uploading" ? 6 : 0}>
         <Group gap="sm" style={{ flex: 1, minWidth: 0 }}>
-          <ThemeIcon variant="light" color="blue" size="lg" radius="md" style={{ flexShrink: 0 }}>
+          <ThemeIcon
+            variant="light"
+            color="blue"
+            size="lg"
+            radius="md"
+            style={{
+              flexShrink: 0,
+              border: "1px solid var(--mantine-color-dark-4)",
+              background: "var(--mantine-color-dark-6)",
+            }}
+          >
             <IconFileMusic size={20} />
           </ThemeIcon>
           <div style={{ minWidth: 0, flex: 1 }}>
@@ -101,16 +128,25 @@ export function FileItem({ song, upload, onRemove, onUpdate }: FileItemProps) {
               value={song.artist ?? ""}
               placeholder="Unknown artist"
               size="xs"
-              c={song.artist ? "inherit" : "red"}
+              c={song.artist ? "inherit" : "orange.3"}
               maxLength={50}
               onSubmit={handleArtistSubmit}
               disabled={!isSongPending}
             />
-            {song.size != null && (
-              <Text size="xs" c="dimmed" mt={2}>
-                {formatFileSize(song.size)}
-              </Text>
-            )}
+            <Group gap="xs" mt={2}>
+              {song.size != null && (
+                <Text size="xs" c="dimmed">
+                  {formatFileSize(song.size)}
+                </Text>
+              )}
+              <Badge
+                size="xs"
+                variant="light"
+                color={status === "error" || isSongUploadStatusError ? "red" : "gray"}
+              >
+                {statusLabel}
+              </Badge>
+            </Group>
           </div>
         </Group>
         <Group gap="xs" style={{ flexShrink: 0 }}>
@@ -124,6 +160,7 @@ export function FileItem({ song, upload, onRemove, onUpdate }: FileItemProps) {
                 variant="subtle"
                 color="gray"
                 size="sm"
+                style={{ borderRadius: "var(--mantine-radius-md)" }}
                 onClick={async () => {
                   setIsDeleting(true);
                   try {
