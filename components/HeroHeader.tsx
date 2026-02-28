@@ -12,8 +12,7 @@ import {
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { ExampleCard } from "./ExampleCard";
-import { IconInfoCircle } from "@tabler/icons-react";
-import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import { IconChevronDown, IconChevronUp, IconInfoCircle } from "@tabler/icons-react";
 import { SMALL_SCREEN_QUERY } from "../utils/breakpoints";
 import { useSession } from "next-auth/react";
 
