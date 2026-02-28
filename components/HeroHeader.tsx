@@ -63,11 +63,8 @@ export function HeroHeader() {
         style={{
           position: "absolute",
           inset: 0,
-          background: [
-            "radial-gradient(70% 120% at 100% 0%, rgba(72, 146, 255, 0.24), transparent 55%)",
-            "radial-gradient(90% 120% at 0% 100%, rgba(162, 89, 255, 0.16), transparent 60%)",
-            "linear-gradient(180deg, rgba(8, 8, 16, 0.58) 0%, rgba(8, 8, 16, 0.38) 60%, rgba(8, 8, 16, 0.62) 100%)",
-          ].join(", "),
+          background:
+            "linear-gradient(180deg, rgba(10, 12, 18, 0.64) 0%, rgba(10, 12, 18, 0.44) 60%, rgba(10, 12, 18, 0.68) 100%)",
         }}
       />
 
@@ -101,10 +98,10 @@ export function HeroHeader() {
                   AI song-to-sheet helper
                 </Badge>
                 <Title order={1} ta="left" c="white" fz="2.5rem">
-                  Turn your recordings into lead sheets
+                  Generate lead sheets from your own audio files
                 </Title>
                 <Text c="gray.2" size="lg" ta="left" maw={520}>
-                  Upload a song, get chords and structure, then export to MusicXML or PDF in just a few clicks.
+                  Upload your songs and get lead sheets with chords, segments and more — exported as MusicXML and PDF.
                 </Text>
                 {!isSmallScreen && (
                   <>
@@ -124,7 +121,7 @@ export function HeroHeader() {
                       radius="md"
                       icon={<IconInfoCircle size={18} />}
                     >
-                      Treat generated sheets as a strong first draft and refine where needed.
+                      Use sheets as drafts rather than final versions.
                     </Alert>
                   </>
                 )}

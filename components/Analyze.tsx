@@ -160,11 +160,9 @@ export function Analyze() {
         radius="md"
         p="sm"
         shadow="xs"
-        bg="rgba(255, 255, 255, 0.02)"
+        bg="dark.8"
         style={{
-          borderColor: "rgba(106, 159, 255, 0.35)",
-          backgroundImage:
-            "linear-gradient(140deg, rgba(83, 129, 255, 0.09) 0%, rgba(151, 99, 255, 0.06) 100%)",
+          borderColor: "var(--mantine-color-dark-5)",
         }}
       >
         <Group justify="space-between" align="center" wrap="nowrap">

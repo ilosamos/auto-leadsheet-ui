@@ -58,15 +58,24 @@ export default function RootLayout({ children }: { children: any }) {
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
         />
       </head>
-      <body style={{ margin: 0 }}>
+      <body
+        style={{
+          margin: 0,
+          minHeight: "100vh",
+          backgroundColor: "#121520",
+          backgroundImage: "linear-gradient(180deg, #171a24 0%, #121520 100%)",
+        }}
+      >
         <MantineProvider theme={theme} defaultColorScheme="dark">
           <Notifications position="top-right" />
           <AuthSessionProvider>
             <GoogleOneTap />
             <JobProvider>
-              <div>
+              <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
                 <Header />
-                <main className="app-main">{children}</main>
+                <main className="app-main" style={{ flex: 1 }}>
+                  {children}
+                </main>
                 <Footer />
               </div>
             </JobProvider>
