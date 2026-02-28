@@ -66,6 +66,7 @@ export function ResultItem({ song }: ResultItemProps) {
   const [includeGuitarTabs, setIncludeGuitarTabs] = useState(false);
   const isSmallScreen = useMediaQuery(SMALL_SCREEN_QUERY);
   const jobId = song.jobId ?? currentJob?.jobId ?? null;
+  const hasPreview = Boolean(song.preview);
 
   const placeholderImageUrl = () => {
     const letter = song.title?.charAt(0).toUpperCase();
@@ -126,14 +127,14 @@ export function ResultItem({ song }: ResultItemProps) {
             height: 72,
             borderRadius: "var(--mantine-radius-md)",
             overflow: "hidden",
-            background: "var(--mantine-color-dark-8)",
+            background: hasPreview ? "#ffffff" : "var(--mantine-color-dark-8)",
             border: "1px solid var(--mantine-color-dark-5)",
             boxShadow: "0 4px 14px rgba(0, 0, 0, 0.25)",
           }}
         >
           <Image
             src={
-              song.preview
+              hasPreview
                 ? `data:image/png;base64,${song.preview}`
                 : undefined
             }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Button, Center, Group, Loader, Modal, Paper, Stack, Text, Title } from "@mantine/core";
+import { Button, Center, Group, Loader, Modal, Stack, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconPlus } from "@tabler/icons-react";
 import { signIn, useSession } from "next-auth/react";
@@ -16,6 +16,7 @@ import { StripeService } from "../app/client/services/StripeService";
 import { api } from "../app/client/api";
 import { notifyError } from "../utils/notifications";
 import { usePolling } from "../hooks/usePolling";
+import { SectionHeaderCard } from "./SectionHeaderCard";
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -155,35 +156,20 @@ export function Analyze() {
         onCancel={handleAuthRequiredCancel}
         onSignIn={handleAuthRequiredSignIn}
       />
-      <Paper
-        withBorder
-        radius="md"
-        p="sm"
-        shadow="xs"
-        bg="dark.8"
-        style={{
-          borderColor: "var(--mantine-color-dark-5)",
-        }}
-      >
-        <Group justify="space-between" align="center" wrap="nowrap">
-          <div style={{ minWidth: 0 }}>
-            <Title order={4} lh={1.1}>
-              Analyze
-            </Title>
-            <Text size="sm" c="dimmed" lineClamp={1}>
-              Upload songs, run analysis, and generate polished lead sheet drafts.
-            </Text>
-          </div>
-          {isAllDoneOrFailed && <Button
+      <SectionHeaderCard
+        title="Analyze"
+        description="Upload songs, run analysis, and generate polished lead sheet drafts."
+        action={isAllDoneOrFailed ? (
+          <Button
             variant="filled"
             size="xs"
             leftSection={<IconPlus size={16} />}
             onClick={handleNewSessionClick}
           >
             New Session
-          </Button>}
-        </Group>
-      </Paper>
+          </Button>
+        ) : undefined}
+      />
       <FileUpload
         enabled={allSongsPending || false}
         allDone={!allSongsPending}

@@ -22,8 +22,8 @@ export function HomePageClient() {
         py="3rem"
         style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}
       >
-        <Stack gap="xs" mb="lg" pl={isSmallScreen ? "0" : "130"}>
-          <Title order={2}>Upload audio, get a great starting sheet</Title>
+        <Stack gap="xs" mb="lg" pl={isSmallScreen ? "0" : "145"}>
+          <Title order={2}>Upload audio, get a lead sheet</Title>
           <Text c="dimmed">
             Fast, friendly analysis for exporting your song ideas to MusicXML or PDF.
           </Text>

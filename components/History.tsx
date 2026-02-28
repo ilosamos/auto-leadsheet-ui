@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button, Group, Paper, Stack, Text, Title } from "@mantine/core";
+import { Button, Group, Stack, Text } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import { UsersService, type SongResponse } from "../app/client";
 import { api } from "../app/client/api";
 import { useUser } from "../providers/AuthSessionProvider";
 import { ResultItem } from "./ResultItem";
+import { SectionHeaderCard } from "./SectionHeaderCard";
 
 type HistoryProps = {
   active: boolean;
@@ -127,16 +128,11 @@ export function History({ active, pageSize = 5 }: HistoryProps) {
   return (
     // Fixed-height panel: header stays anchored, list scrolls inside.
     <Stack gap="md" pb="xs" style={{ height: "100%", minHeight: 0 }}>
-      <Paper withBorder radius="md" p="sm" shadow="xs" maw="648" bg="gray.9">
-        <Group justify="space-between" align="center" wrap="nowrap">
-          <div style={{ minWidth: 0 }}>
-            <Title order={4} lh={1.1}>
-              History
-            </Title>
-            <Text size="sm" c="dimmed" lineClamp={1}>
-              Your previous analyses, newest first.
-            </Text>
-          </div>
+      <SectionHeaderCard
+        title="History"
+        description="Your previous analyses, newest first."
+        maxWidth={648}
+        action={(
           <Button
             variant="light"
             size="xs"
@@ -150,8 +146,8 @@ export function History({ active, pageSize = 5 }: HistoryProps) {
           >
             Refresh
           </Button>
-        </Group>
-      </Paper>
+        )}
+      />
 
       {error && (
         <Group justify="space-between" align="center">
