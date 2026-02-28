@@ -51,8 +51,20 @@ export function AppTabs() {
         value={tab}
         onChange={handleTabChange}
         orientation={isSmallScreen ? "horizontal" : "vertical"}
-        variant="outline"
+        variant="pills"
         placement={isSmallScreen ? undefined : "left"}
+        styles={{
+          list: {
+            background: "rgba(255, 255, 255, 0.03)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: 12,
+            padding: 6,
+          },
+          tab: {
+            borderRadius: 10,
+            fontWeight: 600,
+          },
+        }}
         style={{
           height: "100%",
           minHeight: 0,

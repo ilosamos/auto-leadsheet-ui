@@ -23,9 +23,9 @@ export function HomePageClient() {
         style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}
       >
         <Stack gap="xs" mb="lg" pl={isSmallScreen ? "0" : "130"}>
-          <Title order={2}>Upload audio, get a lead sheet</Title>
+          <Title order={2}>Upload audio, get a great starting sheet</Title>
           <Text c="dimmed">
-            Analyze your recordings to receive exportable MusicXML or PDF.
+            Fast, friendly analysis for exporting your song ideas to MusicXML or PDF.
           </Text>
         </Stack>
         <div style={{ flex: 1, minHeight: 0 }}>

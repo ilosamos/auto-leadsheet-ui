@@ -8,6 +8,7 @@ import {
   Group,
   Alert,
   Button,
+  Badge,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { ExampleCard } from "./ExampleCard";
@@ -26,7 +27,7 @@ export function HeroHeader() {
     setIsCollapsed(isLoggedIn);
   }, [isLoggedIn]);
 
-  const expandedHeight = isSmallScreen ? 290 : 400;
+  const expandedHeight = isSmallScreen ? 310 : 420;
   const collapsedHeight = 72;
   const targetHeight = isLoggedIn && isCollapsed ? collapsedHeight : expandedHeight;
   const toggleLabel = isCollapsed ? "Expand header" : "Collapse header";
@@ -62,8 +63,11 @@ export function HeroHeader() {
         style={{
           position: "absolute",
           inset: 0,
-          background:
-            "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.55) 100%)",
+          background: [
+            "radial-gradient(70% 120% at 100% 0%, rgba(72, 146, 255, 0.24), transparent 55%)",
+            "radial-gradient(90% 120% at 0% 100%, rgba(162, 89, 255, 0.16), transparent 60%)",
+            "linear-gradient(180deg, rgba(8, 8, 16, 0.58) 0%, rgba(8, 8, 16, 0.38) 60%, rgba(8, 8, 16, 0.62) 100%)",
+          ].join(", "),
         }}
       />
 
@@ -87,11 +91,20 @@ export function HeroHeader() {
           <Container size="full" h={expandedHeight} py="lg">
             <Group justify="center" align="center" h="100%" gap="100">
               <Stack align="left" justify="center" gap="xs" h="100%" maw={630}>
+                <Badge
+                  variant="light"
+                  color="blue"
+                  radius="sm"
+                  w="fit-content"
+                  style={{ backdropFilter: "blur(3px)" }}
+                >
+                  AI song-to-sheet helper
+                </Badge>
                 <Title order={1} ta="left" c="white" fz="2.5rem">
-                  Generate lead sheets from your own audio files
+                  Turn your recordings into lead sheets
                 </Title>
                 <Text c="gray.2" size="lg" ta="left" maw={520}>
-                  Upload your songs and get lead sheets with chords, segments and more — exported as MusicXML and PDF.
+                  Upload a song, get chords and structure, then export to MusicXML or PDF in just a few clicks.
                 </Text>
                 {!isSmallScreen && (
                   <>
@@ -102,7 +115,7 @@ export function HeroHeader() {
                       radius="md"
                       icon={<IconInfoCircle size={18} />}
                     >
-                      Works best with simple structured songs of popular genres.
+                      Works best with clearly structured songs in popular genres.
                     </Alert>
                     <Alert
                       variant="light"
@@ -111,7 +124,7 @@ export function HeroHeader() {
                       radius="md"
                       icon={<IconInfoCircle size={18} />}
                     >
-                      Use sheets as drafts rather than final versions.
+                      Treat generated sheets as a strong first draft and refine where needed.
                     </Alert>
                   </>
                 )}

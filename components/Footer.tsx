@@ -12,7 +12,7 @@ const links = [
 
 export function Footer() {
   return (
-    <footer>
+    <footer style={{ borderTop: "1px solid rgba(255, 255, 255, 0.07)" }}>
       <Container size={740} py="md">
         <Group justify="space-between" align="center">
           <Text size="xs" c="dimmed">

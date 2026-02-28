@@ -48,10 +48,19 @@ export function Header() {
   };
 
   return (
-    <header>
+    <header
+      style={{
+        borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+        background:
+          "linear-gradient(180deg, rgba(20, 20, 26, 0.92) 0%, rgba(20, 20, 26, 0.72) 100%)",
+        backdropFilter: "blur(8px)",
+      }}
+    >
       <Container size={740} py="sm">
         <Group justify="space-between">
-          <Text>leadsheet.me</Text>
+          <Text fw={700} style={{ letterSpacing: 0.2 }}>
+            leadsheet.me
+          </Text>
 
           {status === "loading" && (
             <Skeleton height={28} width={100} radius="xl" />
@@ -63,6 +72,7 @@ export function Header() {
               size="xs"
               leftSection={<IconBrandGoogle size={16} />}
               onClick={() => signIn("google")}
+              radius="xl"
             >
               Sign in with Google
             </Button>
@@ -74,7 +84,17 @@ export function Header() {
                 <UnstyledButton>
                   <Group gap="xs">
                     {shouldShowCredits && (
-                      <Text size="sm" fw={500}>
+                      <Text
+                        size="sm"
+                        fw={600}
+                        c="blue.2"
+                        style={{
+                          background: "rgba(64, 128, 255, 0.14)",
+                          border: "1px solid rgba(64, 128, 255, 0.28)",
+                          borderRadius: 999,
+                          padding: "2px 10px",
+                        }}
+                      >
                         Credits: {credits}
                       </Text>
                     )}

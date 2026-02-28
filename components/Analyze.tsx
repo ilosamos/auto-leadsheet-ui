@@ -155,14 +155,25 @@ export function Analyze() {
         onCancel={handleAuthRequiredCancel}
         onSignIn={handleAuthRequiredSignIn}
       />
-      <Paper withBorder radius="md" p="sm" shadow="xs" bg="gray.9">
+      <Paper
+        withBorder
+        radius="md"
+        p="sm"
+        shadow="xs"
+        bg="rgba(255, 255, 255, 0.02)"
+        style={{
+          borderColor: "rgba(106, 159, 255, 0.35)",
+          backgroundImage:
+            "linear-gradient(140deg, rgba(83, 129, 255, 0.09) 0%, rgba(151, 99, 255, 0.06) 100%)",
+        }}
+      >
         <Group justify="space-between" align="center" wrap="nowrap">
           <div style={{ minWidth: 0 }}>
             <Title order={4} lh={1.1}>
               Analyze
             </Title>
             <Text size="sm" c="dimmed" lineClamp={1}>
-              Upload songs, run analysis, and generate your leadsheets.
+              Upload songs, run analysis, and generate polished lead sheet drafts.
             </Text>
           </div>
           {isAllDoneOrFailed && <Button
