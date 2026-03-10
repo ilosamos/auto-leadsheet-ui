@@ -8,6 +8,7 @@ import {
   Group,
   Image,
   Paper,
+  SegmentedControl,
   Stack,
   Switch,
   Text,
@@ -65,9 +66,11 @@ export function ResultItem({ song }: ResultItemProps) {
   const [isDownloadingXml, setIsDownloadingXml] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [includeGuitarTabs, setIncludeGuitarTabs] = useState(false);
+  const [algorithm, setAlgorithm] = useState<"standard" | "alternative">("standard");
   const isSmallScreen = useMediaQuery(SMALL_SCREEN_QUERY);
   const jobId = song.jobId ?? currentJob?.jobId ?? null;
   const hasPreview = Boolean(song.preview);
+  const canUseAlternativeModel = song.beatThisStatus === "SUCCESS";
 
   const placeholderImageUrl = () => {
     const letter = song.title?.charAt(0).toUpperCase();
@@ -82,6 +85,7 @@ export function ResultItem({ song }: ResultItemProps) {
       const baseName = `${song.title ?? song.songId}${includeGuitarTabs ? "-with-tabs" : ""}`;
       const filename = `${baseName}.${type === "pdf" ? "pdf" : "musicxml"}`;
       const params = new URLSearchParams();
+      params.set("alt", String(algorithm === "alternative"));
       if (includeGuitarTabs) {
         params.set("tabs", "true");
       }
@@ -109,7 +113,7 @@ export function ResultItem({ song }: ResultItemProps) {
         }
       }
     },
-    [includeGuitarTabs, jobId, song.songId, song.title],
+    [algorithm, includeGuitarTabs, jobId, song.songId, song.title],
   );
 
   return (
@@ -200,6 +204,23 @@ export function ResultItem({ song }: ResultItemProps) {
           }}
           justify="center"
         >
+          {canUseAlternativeModel && (
+            <Stack gap={4}>
+              <SegmentedControl
+                size="xs"
+                value={algorithm}
+                onChange={(value) => setAlgorithm(value as "standard" | "alternative")}
+                data={[
+                  { label: "Standard", value: "standard" },
+                  { label: "Alternative", value: "alternative" },
+                ]}
+                fullWidth={isSmallScreen}
+              />
+              <Text size="10px" c="dimmed" lh={1.35}>
+                Alternative may work better for some songs.
+              </Text>
+            </Stack>
+          )}
           <Button
             variant="light"
             color="blue"
@@ -215,7 +236,7 @@ export function ResultItem({ song }: ResultItemProps) {
           </Button>
           <Button
             variant="light"
-            color="gray"
+            color="red"
             size="xs"
             leftSection={<IconFileTypePdf size={16} />}
             loading={isDownloadingPdf}

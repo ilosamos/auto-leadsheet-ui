@@ -68,7 +68,7 @@ export class JobsService {
     }
     /**
      * Trigger All Jobs
-     * Trigger both allin1 and chord analysis Cloud Run jobs.
+     * Trigger allin1, chord, and beat_this analysis Cloud Run jobs.
      * @returns RunJobsResponse Successful Response
      * @throws ApiError
      */

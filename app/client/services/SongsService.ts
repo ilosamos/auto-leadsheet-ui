@@ -243,10 +243,12 @@ export class SongsService {
         jobId,
         songId,
         tabs = false,
+        alt = false,
     }: {
         jobId: string,
         songId: string,
         tabs?: boolean,
+        alt?: boolean,
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -257,6 +259,7 @@ export class SongsService {
             },
             query: {
                 'tabs': tabs,
+                'alt': alt,
             },
             errors: {
                 422: `Validation Error`,
@@ -276,10 +279,12 @@ export class SongsService {
         jobId,
         songId,
         tabs = false,
+        alt = false,
     }: {
         jobId: string,
         songId: string,
         tabs?: boolean,
+        alt?: boolean,
     }): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -290,6 +295,7 @@ export class SongsService {
             },
             query: {
                 'tabs': tabs,
+                'alt': alt,
             },
             errors: {
                 422: `Validation Error`,

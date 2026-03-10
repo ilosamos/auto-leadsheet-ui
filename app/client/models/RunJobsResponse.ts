@@ -9,5 +9,6 @@ export type RunJobsResponse = {
     jobId: string;
     allin1ExecutionId: string;
     chordExecutionId: string;
+    beatThisExecutionId: string;
 };
 

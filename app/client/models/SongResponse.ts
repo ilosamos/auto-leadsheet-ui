@@ -23,8 +23,6 @@ export type SongResponse = {
     size?: (number | null);
     length?: (number | null);
     originalName?: (string | null);
-    songformerPath?: (string | null);
-    beatThisPath?: (string | null);
     preview?: (string | null);
 };
 
